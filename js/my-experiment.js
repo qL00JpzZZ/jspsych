@@ -3,6 +3,14 @@ const jsPsych = initJsPsych();
 
 const all_trials = [];
 
+// === ウェルカムトライアルの追加 ===
+const welcome_trial = {
+  type: jsPsychHtmlKeyboardResponse,
+  stimulus: '実験を開始するには、スペースキーを押してください。',
+  choices: [' '],
+};
+all_trials.push(welcome_trial);
+
 // カテゴリごとの画像ファイルパスのリストを定義
 const categories = {
   INDOOR: {
