@@ -153,91 +153,139 @@ const categories = {
           'forest_11_02_altavista.jpg', 'FreeFoto_forest_3_20.jpg', 'forest_30_02_yahoo.jpg', 'forest_01_02_ask.jpg', '482063.jpg',
           'forest_01_02_altavista.jpg', 'forest_01_01_ask.jpg', 'forest25.jpg', 'cdMC398.jpg', 'AYP0783229_P.jpg',
           'cdMC617.jpg', 'nat408.jpg', 'FreeFoto_forest_9_7.jpg', 'forest_05_06_askl.jpg', 'FreeFoto_forest_2_47.jpg',
-        ],
-        desert: [
-          'des22.jpg', 'NA006526.jpg', 'Desert_de_Gobi.jpg', 'beach_138_10_flickr.jpg', 'des14.jpg',
-          'AA019096.jpg', 'land616.jpg', 'NA004783.jpg', 'land701.jpg', 'bambouseraie_42_12_google.jpg',
-          'land514.jpg', 'NA001302.jpg', 'NA008867.jpg', 'beach_165_20_flickr.jpg', 'des15.jpg',
-          'NA006122.jpg', 'beach_40_21_flickr.jpg', 'MWP0020668_P.jpg', '611sahara.jpg', 'des13.jpg',
-          'beach_02_10_yahoo.jpg', 'beach_115_11_flickr.jpg', 'NA000915.jpg', 'NA006122.jpg', 'NA004090.jpg',
-          'AA005954.jpg', 'cdmc795.jpg', 'beach_34_01_flickr.jpg', 'G02 Gobi Desert Sand Dunes.jpg', 'forest_34_08_altavista.jpg',
-          'des17.jpg', 'beach_26_19_altavista.jpg', 'BXP0035856_P.jpg', 'des18.jpg', 'land564.jpg',
-          'AA005954.jpg', '800px-Towering_Sand_Dunes.jpg', 'bambouseraie_42_12_google.jpg', '255055.jpg', 'AIP0005723_P.jpg',
-          'NA006111.jpg', '034medanos.jpg', 'NA000915.jpg', 'land526.jpg', '800px-Towering_Sand_Dunes.jpg',
-          'DVP4967429_P.jpg', 'NA006361.jpg', 'cdmc795.jpg', 'land656.jpg', 'BXP0035855_P.jpg',
-          '50092.jpg', 'Desert_de_Gobi.jpg', 'land645.jpg', 'beach_02_10_yahoo.jpg', 'NA008867.jpg',
-          'beach_91_12_flickr.jpg', 'AA019096.jpg', 'des14.jpg', '034medanos.jpg', 'NA007446.jpg',
-          'natu539.jpg', 'mountain_10_04_askl.jpg', '480075.jpg', 'natu539.jpg', 'land656.jpg',
-          'AA005940.jpg', 'beach_165_20_flickr.jpg', 'Lone Palm, Sahara Desert-1.jpg', 'AIP0005723_P.jpg', 'land526.jpg',
-          'beach_138_10_flickr.jpg', 'DVP4967429_P.jpg', 'des22.jpg', 'natu89.jpg', 'beach_26_19_altavista.jpg',
-          'Lone Palm, Sahara Desert-1.jpg', 'land658.jpg', '480075.jpg', 'land616.jpg', 'beach_91_12_flickr.jpg',
-          'BXP0035856_P.jpg', 'AA020480.jpg', 'n251011.jpg', 'BXP0035855_P.jpg', 'n251011.jpg',
-          'NA006526.jpg', 'beach_115_11_flickr.jpg', 'NA004783.jpg', 'land645.jpg', 'AA020480.jpg',
-          'NA006361.jpg', 'natu89.jpg', 'land701.jpg', 'G02 Gobi Desert Sand Dunes.jpg', '611sahara.jpg',
-          'beach_34_01_flickr.jpg', 'land657.jpg', 'NA001302.jpg', 'MWP0020668_P.jpg', 'des16.jpg',
-          'mountain_10_04_askl.jpg', '50092.jpg', 'des18.jpg', '255055.jpg', 'land658.jpg',
-          'des15.jpg', 'AA005940.jpg', 'land657.jpg', 'des16.jpg', 'forest_34_08_altavista.jpg',
-          'NA006111.jpg', 'NA004090.jpg', 'des13.jpg', 'NA007446.jpg', 'des21.jpg',
-          'beach_40_21_flickr.jpg', 'des21.jpg',
-        ],
-        mountain: [
-          'FreeFoto_mountain_1_31.jpg', 'mountain05.jpg', 'mountain62.jpg', 'FreeFoto_mountain_1_10.jpg', 'FreeFoto_mountain_4_8.jpg',
-          'land16.jpg', 'FreeFoto_mountain_4_28.jpg', 'cdmc181.jpg', 'FreeFoto_mountain_4_21.jpg', 'FreeFoto_mountain_4_28.jpg',
-          'FreeFoto_mountain_4_18.jpg', 'land680.jpg', 'FreeFoto_mountain_1_44.jpg', 'mountain86.jpg', 'FreeFoto_mountain_4_45.jpg',
-          'mountain77.jpg', 'land680.jpg', 'land18.jpg', 'land387.jpg', 'mountain06.jpg',
-          'FreeFoto_mountain_4_45.jpg', 'CMP0003645_P.jpg', 'BXP0029825_P.jpg', 'land145.jpg', 'land143.jpg',
-          'mountain08.jpg', 'FreeFoto_mountain_1_31.jpg', 'DVP4969295_P.jpg', 'mountain59.jpg', 'DVP4967994_P.jpg',
-          'mountain_03_02_askl.jpg', 'FreeFoto_mountain_1_15.jpg', 'mountain64.jpg', 'mountain93.jpg', 'mountain94.jpg',
-          'mountain08.jpg', 'mountain59.jpg', 'land143.jpg', 'FreeFoto_mountain_4_47.jpg', 'FreeFoto_mountain_6_42.jpg',
-          'land188.jpg', 'land130.jpg', 'mountain76.jpg', 'mountain52.jpg', 'FreeFoto_mountain_1_2.jpg',
-          'cdmc181.jpg', 'FreeFoto_mountain_3_34.jpg', 'FreeFoto_mountain_1_2.jpg', 'land387.jpg', 'mountain50.jpg',
-          'FreeFoto_mountain_4_36.jpg', 'land179.jpg', 'mountain09.jpg', 'FreeFoto_mountain_1_5.jpg', 'mountain76.jpg',
-          'mountain80.jpg', 'mountain54.jpg', 'mountain50.jpg', 'BXP0029825_P.jpg', 'FreeFoto_mountain_1_19.jpg',
-          'mountain94.jpg', 'land210.jpg', 'FreeFoto_mountain_7_1.jpg', 'FreeFoto_mountain_3_29.jpg', 'FreeFoto_mountain_8_5.jpg',
-          'FreeFoto_mountain_3_29.jpg', 'mountain64.jpg', 'FreeFoto_mountain_1_36.jpg', 'FreeFoto_mountain_1_5.jpg', 'FAN2009894_P.jpg',
-          'land18.jpg', 'crique_13_08_google.jpg', 'FreeFoto_mountain_4_36.jpg', 'FreeFoto_mountain_1_15.jpg', 'land161.jpg',
-          'mountain06.jpg', 'mountain_03_02_askl.jpg', 'FreeFoto_mountain_1_36.jpg', 'n44002.jpg', 'mountain19.jpg',
-          'mountain19.jpg', 'mountain62.jpg', 'FreeFoto_mountain_4_18.jpg', 'FreeFoto_mountain_3_34.jpg', 'FreeFoto_mountain_4_47.jpg',
-          'FreeFoto_mountain_4_8.jpg', 'land161.jpg', 'mountain52.jpg', 'FreeFoto_mountain_1_44.jpg', 'FreeFoto_mountain_8_5.jpg',
-          'land16.jpg', 'mountain77.jpg', 'n44002.jpg', 'FreeFoto_mountain_1_37.jpg', 'mountain86.jpg',
-          'FAN2009894_P.jpg', 'mountain09.jpg', 'FreeFoto_mountain_1_37.jpg', 'land210.jpg', 'crique_13_08_google.jpg',
-          'FreeFoto_mountain_4_21.jpg', 'FreeFoto_mountain_1_10.jpg', 'land165.jpg', 'mountain80.jpg', 'FreeFoto_mountain_7_1.jpg',
-          'land132.jpg', 'land165.jpg', 'land188.jpg', 'mountain54.jpg', 'CMP0003645_P.jpg',
-          'land145.jpg', 'land130.jpg', 'mountain93.jpg', 'DVP4969295_P.jpg', 'land132.jpg',
-          'DVP4967994_P.jpg', 'FreeFoto_mountain_6_42.jpg', 'land179.jpg', 'FreeFoto_mountain_1_19.jpg',
-        ],
-      }
-    };
+    ],
+    desert: [
+      'des22.jpg', 'NA006526.jpg', 'Desert_de_Gobi.jpg', 'beach_138_10_flickr.jpg', 'des14.jpg',
+      'AA019096.jpg', 'land616.jpg', 'NA004783.jpg', 'land701.jpg', 'bambouseraie_42_12_google.jpg',
+      'land514.jpg', 'NA001302.jpg', 'NA008867.jpg', 'beach_165_20_flickr.jpg', 'des15.jpg',
+      'NA006122.jpg', 'beach_40_21_flickr.jpg', 'MWP0020668_P.jpg', '611sahara.jpg', 'des13.jpg',
+      'beach_02_10_yahoo.jpg', 'beach_115_11_flickr.jpg', 'NA000915.jpg', 'NA006122.jpg', 'NA004090.jpg',
+      'AA005954.jpg', 'cdmc795.jpg', 'beach_34_01_flickr.jpg', 'G02 Gobi Desert Sand Dunes.jpg', 'forest_34_08_altavista.jpg',
+      'des17.jpg', 'beach_26_19_altavista.jpg', 'BXP0035856_P.jpg', 'des18.jpg', 'land564.jpg',
+      'AA005954.jpg', '800px-Towering_Sand_Dunes.jpg', 'bambouseraie_42_12_google.jpg', '255055.jpg', 'AIP0005723_P.jpg',
+      'NA006111.jpg', '034medanos.jpg', 'NA000915.jpg', 'land526.jpg', '800px-Towering_Sand_Dunes.jpg',
+      'DVP4967429_P.jpg', 'NA006361.jpg', 'cdmc795.jpg', 'land656.jpg', 'BXP0035855_P.jpg',
+      '50092.jpg', 'Desert_de_Gobi.jpg', 'land645.jpg', 'beach_02_10_yahoo.jpg', 'NA008867.jpg',
+      'beach_91_12_flickr.jpg', 'AA019096.jpg', 'des14.jpg', '034medanos.jpg', 'NA007446.jpg',
+      'natu539.jpg', 'mountain_10_04_askl.jpg', '480075.jpg', 'natu539.jpg', 'land656.jpg',
+      'AA005940.jpg', 'beach_165_20_flickr.jpg', 'Lone Palm, Sahara Desert-1.jpg', 'AIP0005723_P.jpg', 'land526.jpg',
+      'beach_138_10_flickr.jpg', 'DVP4967429_P.jpg', 'des22.jpg', 'natu89.jpg', 'beach_26_19_altavista.jpg',
+      'Lone Palm, Sahara Desert-1.jpg', 'land658.jpg', '480075.jpg', 'land616.jpg', 'beach_91_12_flickr.jpg',
+      'BXP0035856_P.jpg', 'AA020480.jpg', 'n251011.jpg', 'BXP0035855_P.jpg', 'n251011.jpg',
+      'NA006526.jpg', 'beach_115_11_flickr.jpg', 'NA004783.jpg', 'land645.jpg', 'AA020480.jpg',
+      'NA006361.jpg', 'natu89.jpg', 'land701.jpg', 'G02 Gobi Desert Sand Dunes.jpg', '611sahara.jpg',
+      'beach_34_01_flickr.jpg', 'land657.jpg', 'NA001302.jpg', 'MWP0020668_P.jpg', 'des16.jpg',
+      'mountain_10_04_askl.jpg', '50092.jpg', 'des18.jpg', '255055.jpg', 'land658.jpg',
+      'des15.jpg', 'AA005940.jpg', 'land657.jpg', 'des16.jpg', 'forest_34_08_altavista.jpg',
+      'NA006111.jpg', 'NA004090.jpg', 'des13.jpg', 'NA007446.jpg', 'des21.jpg',
+      'beach_40_21_flickr.jpg', 'des21.jpg',
+    ],
+    mountain: [
+      'FreeFoto_mountain_1_31.jpg', 'mountain05.jpg', 'mountain62.jpg', 'FreeFoto_mountain_1_10.jpg', 'FreeFoto_mountain_4_8.jpg',
+      'land16.jpg', 'FreeFoto_mountain_4_28.jpg', 'cdmc181.jpg', 'FreeFoto_mountain_4_21.jpg', 'FreeFoto_mountain_4_28.jpg',
+      'FreeFoto_mountain_4_18.jpg', 'land680.jpg', 'FreeFoto_mountain_1_44.jpg', 'mountain86.jpg', 'FreeFoto_mountain_4_45.jpg',
+      'mountain77.jpg', 'land680.jpg', 'land18.jpg', 'land387.jpg', 'mountain06.jpg',
+      'FreeFoto_mountain_4_45.jpg', 'CMP0003645_P.jpg', 'BXP0029825_P.jpg', 'land145.jpg', 'land143.jpg',
+      'mountain08.jpg', 'FreeFoto_mountain_1_31.jpg', 'DVP4969295_P.jpg', 'mountain59.jpg', 'DVP4967994_P.jpg',
+      'mountain_03_02_askl.jpg', 'FreeFoto_mountain_1_15.jpg', 'mountain64.jpg', 'mountain93.jpg', 'mountain94.jpg',
+      'mountain08.jpg', 'mountain59.jpg', 'land143.jpg', 'FreeFoto_mountain_4_47.jpg', 'FreeFoto_mountain_6_42.jpg',
+      'land188.jpg', 'land130.jpg', 'mountain76.jpg', 'mountain52.jpg', 'FreeFoto_mountain_1_2.jpg',
+      'cdmc181.jpg', 'FreeFoto_mountain_3_34.jpg', 'FreeFoto_mountain_1_2.jpg', 'land387.jpg', 'mountain50.jpg',
+      'FreeFoto_mountain_4_36.jpg', 'land179.jpg', 'mountain09.jpg', 'FreeFoto_mountain_1_5.jpg', 'mountain76.jpg',
+      'mountain80.jpg', 'mountain54.jpg', 'mountain50.jpg', 'BXP0029825_P.jpg', 'FreeFoto_mountain_1_19.jpg',
+      'mountain94.jpg', 'land210.jpg', 'FreeFoto_mountain_7_1.jpg', 'FreeFoto_mountain_3_29.jpg', 'FreeFoto_mountain_8_5.jpg',
+      'FreeFoto_mountain_3_29.jpg', 'mountain64.jpg', 'FreeFoto_mountain_1_36.jpg', 'FreeFoto_mountain_1_5.jpg', 'FAN2009894_P.jpg',
+      'land18.jpg', 'crique_13_08_google.jpg', 'FreeFoto_mountain_4_36.jpg', 'FreeFoto_mountain_1_15.jpg', 'land161.jpg',
+      'mountain06.jpg', 'mountain_03_02_askl.jpg', 'FreeFoto_mountain_1_36.jpg', 'n44002.jpg', 'mountain19.jpg',
+      'mountain19.jpg', 'mountain62.jpg', 'FreeFoto_mountain_4_18.jpg', 'FreeFoto_mountain_3_34.jpg', 'FreeFoto_mountain_4_47.jpg',
+      'FreeFoto_mountain_4_8.jpg', 'land161.jpg', 'mountain52.jpg', 'FreeFoto_mountain_1_44.jpg', 'FreeFoto_mountain_8_5.jpg',
+      'land16.jpg', 'mountain77.jpg', 'n44002.jpg', 'FreeFoto_mountain_1_37.jpg', 'mountain86.jpg',
+      'FAN2009894_P.jpg', 'mountain09.jpg', 'FreeFoto_mountain_1_37.jpg', 'land210.jpg', 'crique_13_08_google.jpg',
+      'FreeFoto_mountain_4_21.jpg', 'FreeFoto_mountain_1_10.jpg', 'land165.jpg', 'mountain80.jpg', 'FreeFoto_mountain_7_1.jpg',
+      'land132.jpg', 'land165.jpg', 'land188.jpg', 'mountain54.jpg', 'CMP0003645_P.jpg',
+      'land145.jpg', 'land130.jpg', 'mountain93.jpg', 'DVP4969295_P.jpg', 'land132.jpg',
+      'DVP4967994_P.jpg', 'FreeFoto_mountain_6_42.jpg', 'land179.jpg', 'FreeFoto_mountain_1_19.jpg',
+    ],
+  }
+};
 
-    // カテゴリごとに2つずつランダムに画像を選択
-    const selected_images = [];
-    for (const [parent_cat, sub_categories] of Object.entries(categories)) {
-      for (const [sub_cat, images] of Object.entries(sub_categories)) {
-        const shuffled_images = jsPsych.randomization.shuffle(images);
-        for (let i = 0; i < 2; i++) {
-          const selected_image = shuffled_images[i];
-          const image_path = `scenes/${parent_cat}/${sub_cat}/${selected_image}`;
-          selected_images.push(image_path);
-        }
-      }
-    }
+// 音声ファイルリストを定義 (ご提示いただいたすべてのファイル名)
+const sound_files = [
+  'hu.wav', 'ri.wav', 'go.wav', 'ta.wav', 'no.wav', 'zu.wav', 'wa.wav', 'ku.wav', 'mu.wav', 'na.wav', 'zi.wav', 'do.wav',
+  'ze.wav', 'pe.wav', 'za.wav', 'pu.wav', 'se.wav', 'ko.wav', 'ga.wav', 'zo.wav', 'gu.wav', 'me.wav', 'po.wav',
+  'te.wav', 'bi.wav', 're.wav', 'ya.wav', 'ba.wav', 'da.wav', 'ra.wav', 'mo.wav', 'bo.wav', 'so.wav', 'ha.wav',
+  'hi.wav', 'si.wav', 'ru.wav', 'sa.wav', 'nu.wav', 'ke.wav', 'mi.wav', 'gi.wav', 'su.wav', 'de.wav', 'ro.wav',
+  'to.wav', 'bu.wav', 'ma.wav', 'pa.wav', 'ki.wav', 'ti.wav', 'pi.wav', 'yu.wav', 'ho.wav', 'he.wav', 'ni.wav',
+  'be.wav', 'tu.wav'
+];
 
-    // 選択した画像をシャッフル
-    const shuffled_selected_images = jsPsych.randomization.shuffle(selected_images);
+// 画像と音声のペアリングロジック
+function createTrials() {
+  const all_images = [];
+  for (const [parent_cat, sub_categories] of Object.entries(categories)) {
+    for (const [sub_cat, images] of Object.entries(sub_categories)) {
+      const shuffled = jsPsych.randomization.shuffle(images);
+      const selected = shuffled.slice(0, 5); // 各カテゴリから5枚選択
+      selected.forEach(image => {
+        all_images.push(`scenes/${parent_cat}/${sub_cat}/${image}`);
+      });
+    }
+  }
 
-    // 各画像に対応する表示トライアルを作成
-    shuffled_selected_images.forEach(image_path => {
-      const trial = {
-        type: jsPsychHtmlKeyboardResponse,
-        stimulus: `<img src="${image_path}" style="max-width:800px; max-height:600px;">`,
-        choices: [' '], // スペースキーで次に進む
-        on_finish: function(data) {
-          // 画像のパスをデータに記録
-          data.image_path = image_path;
-        }
-      };
-      all_trials.push(trial);
-    });
+  const shuffled_images = jsPsych.randomization.shuffle(all_images);
+  const shuffled_sounds = jsPsych.randomization.shuffle(sound_files);
 
-    // 実験の実行
-   jsPsych.run(all_trials);
+  // A, B, Xカテゴリーの音声ファイルを定義
+  const type_a_sounds = shuffled_sounds.slice(0, 3);
+  const type_b_sounds = shuffled_sounds.slice(3, 6);
+  const type_x_sounds = shuffled_sounds.slice(6, 12);
+
+  // A=Bペアを作成
+  const a_b_pairs = [];
+  for (let i = 0; i < 3; i++) {
+    a_b_pairs.push({ a: type_a_sounds[i], b: type_b_sounds[i] });
+  }
+
+  // A, B, Xのトライアル順序を構築
+  const image_trials = [];
+  let current_image_index = 0;
+
+  a_b_pairs.forEach(pair => {
+    // タイプAトライアル: A音声 -> B音声
+    image_trials.push({ image: shuffled_images[current_image_index++], sound: pair.a, sound_path: `sounds/${pair.a}` });
+    image_trials.push({ image: shuffled_images[current_image_index++], sound: pair.b, sound_path: `sounds/${pair.b}` });
+  });
+
+  // 残りのトライアルをXで埋める
+  const remaining_images = shuffled_images.slice(current_image_index);
+  const shuffled_x_sounds = jsPsych.randomization.shuffle(type_x_sounds);
+  remaining_images.forEach((image, index) => {
+    image_trials.push({ image: image, sound: shuffled_x_sounds[index % shuffled_x_sounds.length], sound_path: `sounds/${shuffled_x_sounds[index % shuffled_x_sounds.length]}` });
+  });
+
+  // トライアルをランダムに配置
+  const final_trials_order = jsPsych.randomization.shuffle(image_trials);
+
+  // jsPsychのタイムラインに変換
+  final_trials_order.forEach(trial_data => {
+    const trial = {
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: `<img src="${trial_data.image}" style="max-width:800px; max-height:600px;">`,
+      choices: [' '], // スペースキーで次に進む
+      on_load: function() {
+        const audio = new Audio(trial_data.sound_path);
+        audio.play();
+      },
+      on_finish: function(data) {
+        data.image_path = trial_data.image;
+        data.sound_file = trial_data.sound;
+      }
+    };
+    all_trials.push(trial);
+  });
+
+  jsPsych.run(all_trials);
+}
+
+// 実行
+createTrials();
