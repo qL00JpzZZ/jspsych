@@ -3,10 +3,10 @@ const jsPsych = initJsPsych();
 
 const all_trials = [];
 
-// === 1. ウェルカムトライアルの追加 ===
+// === ウェルカムトライアルの追加 ===
 const welcome_trial = {
   type: jsPsychHtmlKeyboardResponse,
-  stimulus: '<p>実験を開始するには、スペースキーを押してください。</p>',
+  stimulus: '実験を開始するには、スペースキーを押してください。',
   choices: [' '],
 };
 all_trials.push(welcome_trial);
@@ -235,10 +235,7 @@ function createTrials() {
       const shuffled = jsPsych.randomization.shuffle(images);
       const selected = shuffled.slice(0, 5); // 各カテゴリから5枚選択
       selected.forEach(image => {
-        all_images.push({
-          path: `scenes/${parent_cat}/${sub_cat}/${image}`,
-          category: parent_cat // 画像のカテゴリをデータとして保持
-        });
+        all_images.push(`scenes/${parent_cat}/${sub_cat}/${image}`);
       });
     }
   }
@@ -251,23 +248,6 @@ function createTrials() {
   const type_b_sounds = shuffled_sounds.slice(3, 6);
   const type_x_sounds = shuffled_sounds.slice(6, 12);
 
-  // === 2. 音声グループ分けの表示トライアルの追加 ===
-  let sound_info_html = `
-    <p>実験の前に、以下の音声グループを確認してください。</p>
-    <p><strong>Aグループの音声:</strong> ${type_a_sounds.map(s => s.replace('.wav', '')).join(', ')}</p>
-    <p><strong>Bグループの音声:</strong> ${type_b_sounds.map(s => s.replace('.wav', '')).join(', ')}</p>
-    <p><strong>Xグループの音声:</strong> ${type_x_sounds.map(s => s.replace('.wav', '')).join(', ')}</p>
-    <p>準備ができたら、スペースキーを押して開始してください。</p>
-  `;
-
-  const sound_info_trial = {
-    type: jsPsychHtmlKeyboardResponse,
-    stimulus: sound_info_html,
-    choices: [' '],
-  };
-  all_trials.push(sound_info_trial);
-
-
   // A=Bペアを作成
   const a_b_pairs = [];
   for (let i = 0; i < 3; i++) {
@@ -275,61 +255,38 @@ function createTrials() {
   }
 
   // A, B, Xのトライアル順序を構築
-  const image_sound_pairs = [];
+  const image_trials = [];
   let current_image_index = 0;
 
   a_b_pairs.forEach(pair => {
     // タイプAトライアル: A音声 -> B音声
-    image_sound_pairs.push({
-      image_data: shuffled_images[current_image_index++],
-      sound: pair.a,
-      sound_path: `sounds/${pair.a}`
-    });
-    image_sound_pairs.push({
-      image_data: shuffled_images[current_image_index++],
-      sound: pair.b,
-      sound_path: `sounds/${pair.b}`
-    });
+    image_trials.push({ image: shuffled_images[current_image_index++], sound: pair.a, sound_path: `sounds/${pair.a}` });
+    image_trials.push({ image: shuffled_images[current_image_index++], sound: pair.b, sound_path: `sounds/${pair.b}` });
   });
 
   // 残りのトライアルをXで埋める
   const remaining_images = shuffled_images.slice(current_image_index);
   const shuffled_x_sounds = jsPsych.randomization.shuffle(type_x_sounds);
-  remaining_images.forEach((image_data, index) => {
-    image_sound_pairs.push({
-      image_data: image_data,
-      sound: shuffled_x_sounds[index % shuffled_x_sounds.length],
-      sound_path: `sounds/${shuffled_x_sounds[index % shuffled_x_sounds.length]}`
-    });
+  remaining_images.forEach((image, index) => {
+    image_trials.push({ image: image, sound: shuffled_x_sounds[index % shuffled_x_sounds.length], sound_path: `sounds/${shuffled_x_sounds[index % shuffled_x_sounds.length]}` });
   });
 
   // トライアルをランダムに配置
-  const final_trials_order = jsPsych.randomization.shuffle(image_sound_pairs);
+  const final_trials_order = jsPsych.randomization.shuffle(image_trials);
 
   // jsPsychのタイムラインに変換
   final_trials_order.forEach(trial_data => {
     const trial = {
-      type: jsPsychHtmlButtonResponse, // ボタンレスポンスプラグインを使用
-      stimulus: `
-        <div class="stimulus-container">
-          <img src="${trial_data.image_data.path}" style="max-width:800px; max-height:600px;">
-          <div class="button-container">
-            <p>この画像は屋内ですか、屋外ですか？</p>
-          </div>
-        </div>
-      `,
-      choices: ['INDOOR (屋内)', 'OUTDOOR (屋外)'], // 選択肢ボタン
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: `<img src="${trial_data.image}" style="max-width:800px; max-height:600px;">`,
+      choices: [' '], // スペースキーで次に進む
       on_load: function() {
-        // 音声再生
         const audio = new Audio(trial_data.sound_path);
         audio.play();
       },
       on_finish: function(data) {
-        data.image_path = trial_data.image_data.path;
-        data.image_category_actual = trial_data.image_data.category; // 実際の画像のカテゴリ
+        data.image_path = trial_data.image;
         data.sound_file = trial_data.sound;
-        data.response_category = data.response == 0 ? 'INDOOR' : 'OUTDOOR'; // 選択されたカテゴリ
-        data.correct = data.response_category === data.image_category_actual; // 正誤判定
       }
     };
     all_trials.push(trial);
