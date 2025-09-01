@@ -1,38 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>画像と音声の実験</title>
-    <script src="jspsych-7.3.4/jspsych.js"></script>
-    <script src="jspsych-7.3.4/plugin-html-keyboard-response.js"></script>
-    <script src="jspsych-7.3.4/plugin-html-button-response.js"></script>
-    <link href="jspsych-7.3.4/css/jspsych.css" rel="stylesheet" type="text/css">
-    <style>
-        .jspsych-btn {
-            background-color: #f0f0f0;
-            color: #333;
-            border: 1px solid #ccc;
-            padding: 10px 20px;
-            margin: 0 10px;
-            font-size: 1.2em;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        .jspsych-btn:hover {
-            background-color: #e0e0e0;
-        }
-        .stimulus-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh; /* 画面全体を使う */
-        }
-        .button-container {
-            margin-top: 20px;
-        }
-    </style>
+  <title>My experiment</title>
+  <script src="https://unpkg.com/jspsych@8.2.2"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.1.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-button-response@2.1.0"></script>
+  <link href="https://unpkg.com/jspsych@8.2.2/css/jspsych.css" rel="stylesheet" type="text/css" />
+  <style>
+      .jspsych-btn {
+          background-color: #f0f0f0;
+          color: #333;
+          border: 1px solid #ccc;
+          padding: 10px 20px;
+          margin: 0 10px;
+          font-size: 1.2em;
+          cursor: pointer;
+          border-radius: 5px;
+      }
+      .jspsych-btn:hover {
+          background-color: #e0e0e0;
+      }
+      .stimulus-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 100vh; /* 画面全体を使う */
+      }
+      .button-container {
+          margin-top: 20px;
+      }
+  </style>
 </head>
 <body>
-    <script src="my-experiment.js"></script>
+  <script src="js/my-experiment.js"></script>
 </body>
 </html>
