@@ -1,7 +1,6 @@
 // jsPsychの初期化
 const jsPsych = initJsPsych();
 
-// 全てのトライアルを格納する配列
 const all_trials = [];
 
 // === 1. ウェルカムトライアルの追加 ===
@@ -12,7 +11,7 @@ const welcome_trial = {
 };
 all_trials.push(welcome_trial);
 
-// カテゴリごとの画像ファイルパスのリストを定義 (省略せずに含める)
+// カテゴリごとの画像ファイルパスのリストを定義
 const categories = {
     INDOOR: {
       grocerystore: [
@@ -67,7 +66,7 @@ const categories = {
         'cdmc1119.jpg', 'cdmc1167.jpg', 'aa014484.jpg', 'kitchen004.jpg', 'k3.jpg',
         'kitchen086.jpg', 'int365.jpg', 'cdmc1164.jpg', 'kitchen032.jpg', 'k5.jpg',
         'int357.jpg', 'k7.jpg', 'k12.jpg', 'k1.jpg', 'k10.jpg',
-        'cdmc1175.jpg', 'int396.jpg', 'cdmc1194.jpg', 'kitchen054.jpg', 'aa014484.jpg',
+        'cdmc1175.jpg', 'int396.jpg', 'cdmc1194.jpg', 'kitchen054.jpg', 'aa041720.jpg',
       ],
       gym: [
         'csu6.jpg', 'gym13.jpg', 'bg-gym2.jpg', 'SALLE3.jpg', 'room399.jpg',
@@ -283,12 +282,12 @@ function createTrials() {
     // タイプAトライアル: A音声 -> B音声
     image_sound_pairs.push({
       image_data: shuffled_images[current_image_index++],
-      sound: pair.a,
+      sound_data: { group: 'A', filename: pair.a },
       sound_path: `sounds/${pair.a}`
     });
     image_sound_pairs.push({
       image_data: shuffled_images[current_image_index++],
-      sound: pair.b,
+      sound_data: { group: 'B', filename: pair.b },
       sound_path: `sounds/${pair.b}`
     });
   });
@@ -299,7 +298,7 @@ function createTrials() {
   remaining_images.forEach((image_data, index) => {
     image_sound_pairs.push({
       image_data: image_data,
-      sound: shuffled_x_sounds[index % shuffled_x_sounds.length],
+      sound_data: { group: 'X', filename: shuffled_x_sounds[index % shuffled_x_sounds.length] },
       sound_path: `sounds/${shuffled_x_sounds[index % shuffled_x_sounds.length]}`
     });
   });
@@ -307,50 +306,65 @@ function createTrials() {
   // トライアルをランダムに配置
   const final_trials_order = jsPsych.randomization.shuffle(image_sound_pairs);
 
+  // 実験結果を格納する配列
+  let results = {
+    A: [],
+    B: [],
+    X: []
+  };
+
   // jsPsychのタイムラインに変換
   final_trials_order.forEach(trial_data => {
-    // === 画像と音声を表示するフェーズ ===
-    const image_audio_display_trial = {
-      type: jsPsychHtmlKeyboardResponse,
-      stimulus: `<img src="${trial_data.image_data.path}" style="max-width:800px; max-height:600px;">`,
-      choices: "NO_KEYS", // キーボード入力は受け付けない
-      trial_duration: 1500, // 例: 1.5秒間画像と音声を表示
-      on_load: function() {
-        // 音声再生
-        const audio = new Audio(trial_data.sound_path);
-        audio.play();
-      },
-      data: {
-        phase: 'display',
-        image_path: trial_data.image_data.path,
-        image_category_actual: trial_data.image_data.category,
-        sound_file: trial_data.sound
-      }
-    };
-    all_trials.push(image_audio_display_trial);
-
-    // === ボタンを表示して選択させるフェーズ ===
-    const button_response_trial = {
+    const trial = {
       type: jsPsychHtmlButtonResponse,
       stimulus: `
         <div class="stimulus-container">
-          <p>この画像は屋内ですか、屋外ですか？</p>
+          <img src="${trial_data.image_data.path}" style="max-width:800px; max-height:600px;">
+          <div class="button-container">
+            <p>この画像は屋内ですか、屋外ですか？</p>
+          </div>
         </div>
       `,
-      choices: ['INDOOR (屋内)', 'OUTDOOR (屋外)'], // 選択肢ボタン
-      data: {
-        phase: 'response',
-        image_path: trial_data.image_data.path, // データを引き継ぎ
-        image_category_actual: trial_data.image_data.category,
-        sound_file: trial_data.sound
+      choices: ['INDOOR (屋内)', 'OUTDOOR (屋外)'],
+      on_load: function() {
+        const audio = new Audio(trial_data.sound_path);
+        audio.play();
       },
       on_finish: function(data) {
-        data.response_category = data.response == 0 ? 'INDOOR' : 'OUTDOOR'; // 選択されたカテゴリ
-        data.correct = data.response_category === data.image_category_actual; // 正誤判定
+        // 結果を配列に格納
+        results[trial_data.sound_data.group].push({
+          image: trial_data.image_data.path,
+          sound: trial_data.sound_data.filename,
+          correct_category: trial_data.image_data.category,
+          response: data.response == 0 ? 'INDOOR' : 'OUTDOOR'
+        });
       }
     };
-    all_trials.push(button_response_trial);
+    all_trials.push(trial);
   });
+
+  // === 3. 実験の最後に結果を表示するトライアル ===
+  const results_trial = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: function() {
+      let results_html = '<h2>実験結果</h2>';
+      for (const group in results) {
+        results_html += `<h3>グループ ${group}</h3><ul>`;
+        results[group].forEach(item => {
+          results_html += `<li>画像: ${item.image} | 音: ${item.sound} | 選択: ${item.response}</li>`;
+        });
+        results_html += `</ul>`;
+      }
+      return results_html;
+    },
+    choices: [' '],
+    on_load: function() {
+      // 実験の最後にデータを表示
+      console.log(results);
+    }
+  };
+  all_trials.push(results_trial);
+
 
   jsPsych.run(all_trials);
 }
