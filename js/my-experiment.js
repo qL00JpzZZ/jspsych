@@ -496,41 +496,58 @@ const image_recognition_block = {
 };
 timeline.push(image_recognition_block);
 
-// --- 3b. 音声ペア再認テスト ---
+// --- 3b. 音声ペア再認テスト (修正版) ---
 const sound_recognition_procedure = {
-  type: jsPsychHtmlButtonResponse,
+  // より汎用的なプラグインを使用し、キーボードでの反応を無効化
+  type: jsPsychHtmlKeyboardResponse,
   stimulus: `
     <p>これから2つの音が連続で再生されます。</p>
     <p>よく聞いて、このペアを学習フェーズで聞いたことがあるか判断してください。</p>
+    
+    <div id="sound-test-button-container" class="jspsych-html-button-response-button-group"></div>
     `,
-  choices: [],
-  prompt: '<div id="sound-prompt" style="visibility: hidden;"><p>この音のペアは、学習フェーズで聞きましたか？</p></div>',
+  // 'NO_KEYS' を指定して、キーボードを押しても試行が終わらないようにする
+  choices: "NO_KEYS", 
+  
   on_load: function() {
+    // ボタンを追加するコンテナ要素を取得
+    const button_container = document.getElementById('sound-test-button-container');
+
     const sounds = jsPsych.timelineVariable('sounds');
     const audio1 = new Audio(sounds[0]);
     const audio2 = new Audio(sounds[1]);
-    
+
+    // 最初の音声が終了したら、2番目の音声を再生
     audio1.addEventListener('ended', function() {
       audio2.play();
     });
-    
+
+    // 2番目の音声が終了したら、ボタンを作成して表示
     audio2.addEventListener('ended', function() {
-      jsPsych.getDisplayElement().querySelector('#sound-prompt').style.visibility = 'visible';
-      const button_html = '<button class="jspsych-btn">%choice%</button>';
+      
+      // ボタンのテキスト
       const choices = ['はい、聞きました', 'いいえ、聞いていません'];
-      let buttons = choices.map(c => button_html.replace('%choice%', c));
-      jsPsych.getDisplayElement().querySelector('.jspsych-html-button-response-stimulus').insertAdjacentHTML('afterend', 
-        '<div class="jspsych-html-button-response-button-group">' + buttons.join('') + '</div>'
-      );
-      const btns = jsPsych.getDisplayElement().querySelectorAll('.jspsych-btn');
-      for (let i=0; i < btns.length; i++) {
-        btns[i].addEventListener('click', function(){
-            const choice = i;
-            jsPsych.finishTrial({response: choice});
+      
+      // 各ボタンを作成
+      choices.forEach((choice, index) => {
+        const button = document.createElement('button');
+        button.classList.add('jspsych-btn');
+        button.textContent = choice;
+        
+        // ボタンにクリックイベントを設定
+        button.addEventListener('click', function() {
+          // ボタンを無効化して二重クリックを防止
+          button_container.innerHTML = ''; 
+          // 押されたボタンの番号(0か1)をデータとして記録し、試行を終了
+          jsPsych.finishTrial({ response: index });
         });
-      }
+        
+        // 作成したボタンをコンテナに追加
+        button_container.appendChild(button);
+      });
     });
 
+    // 最初の音声を再生開始
     audio1.play();
   },
   data: {
@@ -543,8 +560,9 @@ const sound_recognition_procedure = {
 const sound_recognition_block = {
   timeline: [sound_recognition_procedure],
   timeline_variables: sound_recognition_stimuli,
-  randomize_order: true
+  randomize_order: true // 音声ペアの提示順はランダムに
 };
+
 timeline.push(sound_recognition_block);
 
 // --- 実験の実行 ---
