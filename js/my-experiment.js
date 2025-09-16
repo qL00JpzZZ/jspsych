@@ -395,6 +395,57 @@ const sound_recognition_stimuli = [
   ...new_sound_pairs.map(pair => ({ sounds: pair, status: 'new', correct_response: 'k' /* 聞いていない */ }))
 ];
 
+
+// =========================================================================
+// ★★★ 変更点1: デバッグ情報画面の生成 ★★★
+// =========================================================================
+// ファイルパスからファイル名のみを抽出するヘルパー関数
+const getFileName = (path) => path.split('/').pop();
+
+let debug_html = `
+  <div style="width: 80%; margin: auto; text-align: left; background: #fff; padding: 20px; border-radius: 5px; color: #333;">
+    <h2>音声ファイルの分類とペアリング（デバッグ情報）</h2>
+    <p>実験開始前に、今回の試行で使われる音声の割り当てとペアを確認できます。</p>
+    <p>準備ができたら、何かキーを押して実験の教示に進んでください。</p>
+    <hr>
+    
+    <h3>割り当てられた音声ファイル:</h3>
+    
+    <h4>パターンAの音声 (${sounds_for_A.length}個)</h4>
+    <ul>
+      ${sounds_for_A.map(sound => `<li>${getFileName(sound)}</li>`).join('')}
+    </ul>
+    
+    <h4>パターンBの音声 (${sounds_for_B.length}個)</h4>
+    <ul>
+      ${sounds_for_B.map(sound => `<li>${getFileName(sound)}</li>`).join('')}
+    </ul>
+
+    <h4>パターンXの音声 (${sounds_for_X.length}個)</h4>
+    <ul>
+      ${sounds_for_X.map(sound => `<li>${getFileName(sound)}</li>`).join('')}
+    </ul>
+
+    <hr>
+    <h3>A-Bの1対1ペア:</h3>
+    <table border="1" style="border-collapse: collapse; width: 50%; margin: auto;">
+      <tr><th style="padding: 8px;">パターンA</th><th style="padding: 8px;">パターンB</th></tr>
+      ${learned_sound_pairs.map(pair => `
+        <tr>
+          <td style="padding: 8px;">${getFileName(pair[0])}</td>
+          <td style="padding: 8px;">${getFileName(pair[1])}</td>
+        </tr>
+      `).join('')}
+    </table>
+  </div>
+`;
+
+const debug_info_trial = {
+  type: jsPsychHtmlKeyboardResponse,
+  stimulus: debug_html
+};
+
+
 // =========================================================================
 // 3. タイムラインの構築
 // =========================================================================
@@ -407,6 +458,10 @@ const preload_trial = {
   message: '実験の準備をしています。しばらくお待ちください...'
 };
 timeline.push(preload_trial);
+
+// ★★★ 変更点1: デバッグ情報画面をタイムラインに追加 ★★★
+timeline.push(debug_info_trial);
+
 
 const instructions_learning = {
   type: jsPsychHtmlKeyboardResponse,
@@ -421,7 +476,6 @@ const instructions_learning = {
 };
 timeline.push(instructions_learning);
 
-// --- 学習フェーズの手続き ---
 const learning_procedure = {
   type: jsPsychHtmlKeyboardResponse,
   stimulus: function() {
@@ -460,7 +514,6 @@ const instructions_test = {
 };
 timeline.push(instructions_test);
 
-// --- 画像再認テストの手続き ---
 const image_recognition_procedure = {
   type: jsPsychHtmlKeyboardResponse,
   stimulus: function() {
@@ -486,7 +539,7 @@ const image_recognition_block = {
 };
 timeline.push(image_recognition_block);
 
-// --- 音声ペア再認テストの手続き (2段階方式) ---
+// --- ★★★ 変更点2: 音声テストの高速化 ★★★ ---
 // ステップ1: 音声再生パート
 const sound_playback_trial = {
     type: jsPsychHtmlKeyboardResponse,
@@ -495,16 +548,20 @@ const sound_playback_trial = {
         <p>よく聞いてください。</p>
     `,
     choices: "NO_KEYS",
-    trial_duration: 3000,
+    // trial_duration を削除し、音声再生完了と同時に試行を終了させる
     on_load: function() {
         const sounds = jsPsych.timelineVariable('sounds');
         const audio1 = new Audio(sounds[0]);
         const audio2 = new Audio(sounds[1]);
         audio1.addEventListener('ended', () => audio2.play());
+        // 2つ目の音声が終了した時点で、この試行を終了する
+        audio2.addEventListener('ended', () => {
+            jsPsych.finishTrial();
+        });
         audio1.play();
     }
 };
-// ステップ2: 応答パート
+// ステップ2: 応答パート (変更なし)
 const sound_response_trial = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: `
