@@ -1,11 +1,11 @@
 // ファイルパス: my-experiment.js (修正後の全コード)
 
 /**
- * 【新しく追加する関数】
- * 実験結果をサーバーレス関数経由でGoogle Driveに保存する関数
- * @param {string} csvData - 保存するCSV形式のデータ文字列
+ * 【修正箇所】
+ * 実験結果のJSONデータをサーバーレス関数経由でGoogle Driveに保存する関数
+ * @param {object} jsonData - 保存するJSON形式のデータオブジェクト
  */
-async function saveExperimentResult(csvData) {
+async function saveExperimentResult(jsonData) {
     try {
         // 作成したサーバーレス関数を呼び出します。
         // '/.netlify/functions/saveToDrive' という決まったパスでアクセスできます。
@@ -14,8 +14,8 @@ async function saveExperimentResult(csvData) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            // CSVデータをJSONオブジェクトにラップして送信します
-            body: JSON.stringify({ csv: csvData }),
+            // JavaScriptオブジェクトをそのままJSON文字列として送信します
+            body: JSON.stringify(jsonData),
         });
 
         // サーバーからの応答が正常でない場合（エラーが発生した場合）
@@ -38,9 +38,9 @@ async function saveExperimentResult(csvData) {
 // jsPsychの初期化
 const jsPsych = initJsPsych({
   on_finish: async function() {
-    // 【変更箇所】実験終了時にサーバーレス関数を呼び出す
-    const csvData = jsPsych.data.get().csv();
-    await saveExperimentResult(csvData); // 非同期処理の完了を待つ
+    // 【修正箇所】実験終了時にJSONデータを取得し、サーバーレス関数を呼び出す
+    const resultData = jsPsych.data.get().json();
+    await saveExperimentResult(JSON.parse(resultData)); // 非同期処理の完了を待つ
 
     // --- 元のコードにあった結果表示のロジックをここへ移動 ---
     const learning_results = jsPsych.data.get().filter({ task_phase: 'learning' }).values();
@@ -105,7 +105,6 @@ const jsPsych = initJsPsych({
 const timeline = [];
 
 // --- 画像ファイルリスト ---
-// (この部分は長大なので変更ありません。元のコードのままにしてください)
 const raw_image_files = {
   INDOOR: {
     grocerystore: [
@@ -184,135 +183,74 @@ const raw_image_files = {
       'FreeFoto_castle_1_29.jpg', 'FreeFoto_castle_3_9.jpg', 'FreeFoto_castle_5_49.jpg', 'FreeFoto_castle_14_31.jpg', 'build155.jpg',
       'FreeFoto_castle_16_21.jpg', 'FreeFoto_castle_1_9.jpg', 'FreeFoto_castle_16_1.jpg', 'FreeFoto_castle_8_2.jpg', 'FreeFoto_castle_1_25.jpg',
       'FreeFoto_castle_1_3.jpg', 'FreeFoto_castle_17_2.jpg', 'FreeFoto_castle_9_36.jpg', 'FreeFoto_castle_16_48.jpg', 'FreeFoto_castle_14_34.jpg',
-      'Chateau 1-1.jpg', 'FreeFoto_castle_16_1.jpg', 'FreeFoto_castle_1_10.jpg', 'FreeFoto_castle_17_39.jpg', 'FreeFoto_castle_1_40.jpg',
-      'FreeFoto_castle_1_15.jpg', 'build155.jpg', 'FreeFoto_castle_1_5.jpg', 'FreeFoto_castle_1_36.jpg', 'FreeFoto_castle_5_41.jpg',
-      'FreeFoto_castle_22_40.jpg', 'FreeFoto_castle_1_32.jpg', 'build124.jpg', 'FreeFoto_castle_8_10.jpg', 'FreeFoto_castle_15_11.jpg',
-      'chateau-chillon-1.jpg', 'chateau_frontenac.jpg', 'FreeFoto_castle_1_17.jpg', 'FreeFoto_castle_1_1.jpg', 'FreeFoto_castle_1_9.jpg',
-      'chateau-de-losse.jpg', 'FreeFoto_castle_1_21.jpg', 'FreeFoto_castle_16_14.jpg', 'FreeFoto_castle_8_37.jpg', 'FreeFoto_castle_8_2.jpg',
-      'build124.jpg', 'FreeFoto_castle_1_17.jpg', 'arques_chateau_3.jpg', '7_12_chateau_de_chauvac-1.jpg', 'carcassonebridge.jpg',
-      'FreeFoto_castle_5_49.jpg', 'FreeFoto_castle_1_26.jpg', 'FreeFoto_castle_1_38.jpg', 'FreeFoto_castle_1_32.jpg', 'FreeFoto_castle_16_48.jpg',
-      'FreeFoto_castle_1_26.jpg', 'chateau-de-losse.jpg', 'arques_chateau_3.jpg', 'FreeFoto_castle_1_21.jpg', 'FreeFoto_castle_8_29.jpg',
-      'FreeFoto_castle_17_2.jpg', 'FreeFoto_castle_20_49.jpg', 'FreeFoto_castle_3_9.jpg', 'FreeFoto_castle_1_5.jpg', 'chenonceaux-chateau-de-chenonceau-chenony1-1.jpg',
-      'FreeFoto_castle_8_37.jpg', 'FreeFoto_castle_1_10.jpg', 'FreeFoto_castle_8_29.jpg', 'Chateau D\'Usse.jpg', 'Chateau 1-1.jpg',
-      'FreeFoto_castle_16_49.jpg', 'FreeFoto_castle_9_36.jpg', 'FreeFoto_castle_8_7.jpg', 'FreeFoto_castle_15_11.jpg', 'FreeFoto_castle_8_10.jpg',
-      'FreeFoto_castle_1_24.jpg', 'FreeFoto_castle_1_12.jpg', 'FreeFoto_castle_8_7.jpg', 'FreeFoto_castle_14_34.jpg', 'chateau_barrail1.jpg',
-      'FreeFoto_castle_1_22.jpg', 'FreeFoto_castle_22_40.jpg', 'Chateau D\'Usse.jpg', 'FreeFoto_castle_5_41.jpg', 'FreeFoto_castle_16_7.jpg',
-      'FreeFoto_castle_3_27.jpg', 'FreeFoto_castle_17_39.jpg', 'FreeFoto_castle_1_24.jpg', 'FreeFoto_castle_1_15.jpg', '087 Chateau Laurier.jpg',
-      'FreeFoto_castle_1_1.jpg', 'FreeFoto_castle_16_21.jpg', 'FreeFoto_castle_20_49.jpg', 'FreeFoto_castle_16_14.jpg', 'FreeFoto_castle_1_12.jpg',
-      'FreeFoto_castle_1_13.jpg', 'build680.jpg', 'carcassonebridge.jpg', '38588-Chateau-De-Cruix-0.jpg', '7_12_chateau_de_chauvac-1.jpg',
-      'FreeFoto_castle_14_31.jpg', 'build680.jpg', 'chateau_de_bran_chateau_de_dracula.jpg', 'FreeFoto_castle_16_7.jpg', 'FreeFoto_castle_1_3.jpg',
-      'chateau_de_bran_chateau_de_dracula.jpg', 'FreeFoto_castle_1_36.jpg', 'FreeFoto_castle_1_29.jpg', 'FreeFoto_castle_1_25.jpg', 'FreeFoto_castle_1_38.jpg',
-      'chateau_v.jpg', 'FreeFoto_castle_3_27.jpg', 'FreeFoto_castle_16_49.jpg', 'FreeFoto_castle_1_22.jpg'
+      'Chateau 1-1.jpg', 'FreeFoto_castle_1_10.jpg', 'FreeFoto_castle_17_39.jpg', 'FreeFoto_castle_1_15.jpg', 'FreeFoto_castle_1_5.jpg',
+      'FreeFoto_castle_1_36.jpg', 'FreeFoto_castle_5_41.jpg', 'FreeFoto_castle_22_40.jpg', 'FreeFoto_castle_1_32.jpg', 'build124.jpg',
+      'FreeFoto_castle_8_10.jpg', 'FreeFoto_castle_15_11.jpg', 'FreeFoto_castle_1_17.jpg', 'FreeFoto_castle_1_1.jpg', 'chateau-de-losse.jpg',
+      'FreeFoto_castle_1_21.jpg', 'FreeFoto_castle_16_14.jpg', 'FreeFoto_castle_8_37.jpg', 'arques_chateau_3.jpg', '7_12_chateau_de_chauvac-1.jpg',
+      'carcassonebridge.jpg', 'FreeFoto_castle_1_26.jpg', 'FreeFoto_castle_1_38.jpg', 'FreeFoto_castle_8_29.jpg', 'FreeFoto_castle_20_49.jpg',
+      'Chateau D\'Usse.jpg', 'FreeFoto_castle_16_49.jpg', 'FreeFoto_castle_8_7.jpg', 'FreeFoto_castle_1_24.jpg', 'FreeFoto_castle_1_12.jpg',
+      'FreeFoto_castle_1_22.jpg', 'FreeFoto_castle_16_7.jpg', 'FreeFoto_castle_3_27.jpg', 'build680.jpg', 'chateau_de_bran_chateau_de_dracula.jpg',
     ],
     beach: [
       'beach_167_08_flickr.jpg', 'beach_127_15_flickr.jpg', 'beach_163_18_flickr.jpg', 'CCP0013242_P.jpg', 'bea3.jpg',
       'beach_35_16_altavista.jpg', 'beach_01_05_google.jpg', 'beach_95_03_flickr.jpg', 'cdMC862.jpg', 'beach_01_02_google.jpg',
-      'beach_dsc00550.jpg', 'CCP0013242_P.jpg', 'beach_167_15_flickr.jpg', 'beach_163_23_flickr.jpg', 'beach_39_09_flickr.jpg',
-      'bea10.jpg', 'beach_01_05_google.jpg', 'beach_121_12_flickr.jpg', 'bea2.jpg', 'beach_28_18_flickr.jpg',
-      'beach_55_21_flickr.jpg', 'beach_47_02_altavista.jpg', 'bea2.jpg', 'beach_13_11_flickr.jpg', 'bambouseraie_45_05_google.jpg',
-      'beach_01_08_google.jpg', 'beach_04_06_ask.jpg', 'beach_161_11_flickr.jpg', 'beach_08_07_google.jpg', 'beach_11_02_ask.jpg',
-      '1147453287.jpg', 'beach_01_12_flickr.jpg', 'beach_30_16_flickr.jpg', 'beach_08_07_google.jpg', 'beach_01_08_google.jpg',
-      'beach_35_16_altavista.jpg', 'beach_18_22_flickr.jpg', 'beach_04_06_ask.jpg', 'beach_02_06_ask.jpg', 'beach_91_17_flickr.jpg',
-      'beach_26_07_flickr.jpg', 'CCP0013911_P.jpg', 'beach_55_21_flickr.jpg', 'Cancun.jpg', 'beach_127_15_flickr.jpg',
-      'CCP0012536_P.jpg', 'beach_143_14_flickr.jpg', 'beach_163_23_flickr.jpg', 'beach_144_05_flickr.jpg', 'beach_01_03_altavista.jpg',
-      'beach_39_09_flickr.jpg', 'beach_166_09_flickr.jpg', 'beach.jpg', 'beach_45_01_altavista.jpg', 'AYP0779018_P.jpg',
-      'beach_95_03_flickr.jpg', 'bea10.jpg', '2006-02-13-15-28-07sml.jpg', 'beach_13_11_flickr.jpg', 'beach_163_18_flickr.jpg',
-      'beach_37_22_flickr.jpg', 'beach_08_04_ask.jpg', 'beach_47_02_altavista.jpg', 'beach_167_15_flickr.jpg', 'beach_dsc00550.jpg',
-      'AYP0779641_P.jpg', 'beach_30_16_flickr.jpg', '1147453287.jpg', 'bea4.jpg', 'beach_45_01_altavista.jpg',
-      'beach_121_12_flickr.jpg', 'beach_08_04_ask.jpg', 'CCP0012536_P.jpg', 'DVP1915541_P.jpg', 'beach_18_22_flickr.jpg',
-      'beach_51_15_altavista.jpg', 'beach_01_01_ask.jpg', 'beach_51_15_altavista.jpg', 'AYP0779018_P.jpg', 'bea4.jpg',
-      'beach_144_05_flickr.jpg', 'beach_28_18_flickr.jpg', 'beach_04_11_google.jpg', 'beach_166_09_flickr.jpg', 'beach_01_03_altavista.jpg',
-      'beach_167_08_flickr.jpg', 'beach_19_07_altavista.jpg', 'beach_02_06_ask.jpg', 'beach_143_14_flickr.jpg', 'cdMC862.jpg',
-      'beach_34_12_flickr.jpg', 'bea5.jpg', 'beach_01_05_askl.jpg', 'AYP0779641_P.jpg', 'beach_26_07_flickr.jpg',
-      'beach_01_12_flickr.jpg', 'Cancun.jpg', 'beach_37_22_flickr.jpg', 'beach_19_07_altavista.jpg', 'beach_34_12_flickr.jpg',
-      'cdMC839.jpg', 'BLP0018661_P.jpg', 'beach_04_11_google.jpg', 'beach_01_05_askl.jpg', 'bea3.jpg',
-      'BLP0018661_P.jpg', '2006-02-13-15-28-07sml.jpg', 'bambouseraie_45_05_google.jpg', 'CCP0013911_P.jpg', 'beach_01_02_google.jpg',
-      'bea5.jpg', 'beach_01_01_ask.jpg', 'beach_161_11_flickr.jpg', 'beach_01_03_google.jpg', 'DVP1915541_P.jpg',
-      'beach.jpg', 'beach_01_03_google.jpg', 'beach_91_17_flickr.jpg', 'cdMC839.jpg', 'beach_11_02_ask.jpg',
+      'beach_dsc00550.jpg', 'beach_167_15_flickr.jpg', 'beach_163_23_flickr.jpg', 'beach_39_09_flickr.jpg', 'bea10.jpg',
+      'beach_121_12_flickr.jpg', 'bea2.jpg', 'beach_28_18_flickr.jpg', 'beach_55_21_flickr.jpg', 'beach_47_02_altavista.jpg',
+      'beach_13_11_flickr.jpg', 'bambouseraie_45_05_google.jpg', 'beach_01_08_google.jpg', 'beach_04_06_ask.jpg', 'beach_161_11_flickr.jpg',
+      'beach_08_07_google.jpg', 'beach_11_02_ask.jpg', '1147453287.jpg', 'beach_01_12_flickr.jpg', 'beach_30_16_flickr.jpg',
+      'beach_18_22_flickr.jpg', 'beach_02_06_ask.jpg', 'beach_91_17_flickr.jpg', 'beach_26_07_flickr.jpg', 'CCP0013911_P.jpg',
+      'Cancun.jpg', 'CCP0012536_P.jpg', 'beach_143_14_flickr.jpg', 'beach_144_05_flickr.jpg', 'beach_01_03_altavista.jpg',
+      'beach_166_09_flickr.jpg', 'beach.jpg', 'beach_45_01_altavista.jpg', 'AYP0779018_P.jpg', '2006-02-13-15-28-07sml.jpg',
+      'beach_37_22_flickr.jpg', 'beach_08_04_ask.jpg', 'AYP0779641_P.jpg', 'bea4.jpg', 'DVP1915541_P.jpg',
+      'beach_51_15_altavista.jpg', 'beach_01_01_ask.jpg', 'beach_04_11_google.jpg', 'beach_19_07_altavista.jpg', 'beach_34_12_flickr.jpg',
+      'bea5.jpg', 'beach_01_05_askl.jpg', 'cdMC839.jpg', 'BLP0018661_P.jpg', 'beach_01_03_google.jpg',
     ],
     forest: [
       'FreeFoto_forest_3_19.jpg', 'FAN1006576_P.jpg', 'CBP1014811_P.jpg', 'forest_01_01_ask.jpg', 'cdMC349.jpg',
       'forest24.jpg', 'forest25.jpg', 'FreeFoto_forest_9_7.jpg', 'AYP0783202_P-1.jpg', 'forest_11_20_yahoo.jpg',
       'DVP4907648_P.jpg', 'forest_02_11_altavista.jpg', 'forest_01_01_google.jpg', 'forest05.jpg', 'CYP0800679_P.jpg',
       'forest_09_05_askl.jpg', 'forest_11_06_askl.jpg', 'AGP0027965_P.jpg', 'DVP4967677_P.jpg', '36021.jpg',
-      'FreeFoto_forest_3_44.jpg', 'AYP0783202_P-1.jpg', 'forest24.jpg', 'forest_31_02_altavista.jpg', 'CYP0801743_P.jpg',
-      'cdMC413.jpg', 'CBP1014811_P.jpg', 'DVP4966497_P.jpg', 'DVP4962393_P.jpg', '08Trees.jpg',
-      'CYP0800679_P.jpg', 'forest_18_04_askl.jpg', 'DVP4966497_P.jpg', 'forest_11_02_altavista.jpg', 'FreeFoto_forest_11_32.jpg',
-      'FreeFoto_forest_3_44.jpg', 'forest_36_05_altavista.jpg', 'FreeFoto_forest_3_26.jpg', 'bambouseraie_12_10_altavista.jpg', 'FreeFoto_forest_3_19.jpg',
-      'CCP0014018_P-1.jpg', 'forest_01_01_google.jpg', '08Trees.jpg', 'nat234.jpg', 'forest10.jpg',
-      'forest20.jpg', 'forest_01_02_ask.jpg', 'FreeFoto_forest_3_32.jpg', 'forest05.jpg', 'forest_01_02_altavista.jpg',
-      'forest_30_02_yahoo.jpg', 'CYP0801743_P.jpg', 'forest_31_02_altavista.jpg', 'forest_36_05_altavista.jpg', 'CCP0014018_P-1.jpg',
-      'FreeFoto_forest_2_48.jpg', 'FreeFoto_national park_10_1.jpg', '36032.jpg', 'AYP0783229_P.jpg', 'FreeFoto_forest_3_32.jpg',
-      'AGP0027965_P.jpg', 'forest20.jpg', 'forest_32_08_altavista.jpg', 'bambouseraie_12_10_altavista.jpg', 'cdMC398.jpg',
-      'FreeFoto_forest_3_20.jpg', 'FreeFoto_forest_11_36.jpg', 'cdMC349.jpg', 'cdMC413.jpg', 'forest_11_20_yahoo.jpg',
-      'FAN2016942_P.jpg', 'forest_17_01_askl.jpg', 'FreeFoto_forest_2_47.jpg', 'DVP4967677_P.jpg', '36021.jpg',
-      'nat234.jpg', 'forest_05_06_askl.jpg', 'FreeFoto_forest_3_26.jpg', 'forest_17_01_askl.jpg', 'FAN1006576_P.jpg',
-      'FreeFoto_forest_3_43.jpg', 'DVP4962393_P.jpg', '482063.jpg', 'cdMC617.jpg', 'DVP4907648_P.jpg',
-      'bambouseraie_02_05_altavista.jpg', 'forest13.jpg', 'forest_14_16_yahoo.jpg', 'forest_18_04_askl.jpg', 'forest_14_16_yahoo.jpg',
-      'FreeFoto_forest_3_43.jpg', 'forest_11_06_askl.jpg', 'FreeFoto_forest_2_48.jpg', 'forest13.jpg', 'nat408.jpg',
-      'FreeFoto_forest_11_32.jpg', 'forest_32_08_altavista.jpg', 'FAN2016942_P.jpg', 'FreeFoto_national park_10_1.jpg', 'forest_02_11_altavista.jpg',
-      '36032.jpg', 'FreeFoto_forest_11_36.jpg', 'forest10.jpg', 'bambouseraie_02_05_altavista.jpg', 'forest_09_05_askl.jpg',
-      'forest_11_02_altavista.jpg', 'FreeFoto_forest_3_20.jpg', 'forest_30_02_yahoo.jpg', 'forest_01_02_ask.jpg', '482063.jpg',
-      'forest_01_02_altavista.jpg', 'forest_01_01_ask.jpg', 'forest25.jpg', 'cdMC398.jpg', 'AYP0783229_P.jpg',
-      'cdMC617.jpg', 'nat408.jpg', 'FreeFoto_forest_9_7.jpg', 'forest_05_06_askl.jpg', 'FreeFoto_forest_2_47.jpg',
+      'FreeFoto_forest_3_44.jpg', 'forest_31_02_altavista.jpg', 'CYP0801743_P.jpg', 'cdMC413.jpg', 'DVP4966497_P.jpg',
+      'DVP4962393_P.jpg', '08Trees.jpg', 'forest_18_04_askl.jpg', 'forest_11_02_altavista.jpg', 'FreeFoto_forest_11_32.jpg',
+      'forest_36_05_altavista.jpg', 'FreeFoto_forest_3_26.jpg', 'bambouseraie_12_10_altavista.jpg', 'CCP0014018_P-1.jpg', 'nat234.jpg',
+      'forest10.jpg', 'forest20.jpg', 'forest_01_02_ask.jpg', 'FreeFoto_forest_3_32.jpg', 'forest_01_02_altavista.jpg',
+      'forest_30_02_yahoo.jpg', 'FreeFoto_forest_2_48.jpg', 'FreeFoto_national park_10_1.jpg', '36032.jpg', 'AYP0783229_P.jpg',
+      'forest_32_08_altavista.jpg', 'cdMC398.jpg', 'FreeFoto_forest_3_20.jpg', 'FreeFoto_forest_11_36.jpg', 'FAN2016942_P.jpg',
+      'forest_17_01_askl.jpg', 'FreeFoto_forest_2_47.jpg', 'forest_05_06_askl.jpg', 'FreeFoto_forest_3_43.jpg', '482063.jpg',
+      'cdMC617.jpg', 'bambouseraie_02_05_altavista.jpg', 'forest13.jpg', 'forest_14_16_yahoo.jpg', 'nat408.jpg',
     ],
     desert: [
       'des22.jpg', 'NA006526.jpg', 'Desert_de_Gobi.jpg', 'beach_138_10_flickr.jpg', 'des14.jpg',
       'AA019096.jpg', 'land616.jpg', 'NA004783.jpg', 'land701.jpg', 'bambouseraie_42_12_google.jpg',
       'land514.jpg', 'NA001302.jpg', 'NA008867.jpg', 'beach_165_20_flickr.jpg', 'des15.jpg',
       'NA006122.jpg', 'beach_40_21_flickr.jpg', 'MWP0020668_P.jpg', '611sahara.jpg', 'des13.jpg',
-      'beach_02_10_yahoo.jpg', 'beach_115_11_flickr.jpg', 'NA000915.jpg', 'NA006122.jpg', 'NA004090.jpg',
-      'AA005954.jpg', 'cdmc795.jpg', 'beach_34_01_flickr.jpg', 'G02 Gobi Desert Sand Dunes.jpg', 'forest_34_08_altavista.jpg',
-      'des17.jpg', 'beach_26_19_altavista.jpg', 'BXP0035856_P.jpg', 'des18.jpg', 'land564.jpg',
-      'AA005954.jpg', '800px-Towering_Sand_Dunes.jpg', 'bambouseraie_42_12_google.jpg', '255055.jpg', 'AIP0005723_P.jpg',
-      'NA006111.jpg', '034medanos.jpg', 'NA000915.jpg', 'land526.jpg', '800px-Towering_Sand_Dunes.jpg',
-      'DVP4967429_P.jpg', 'NA006361.jpg', 'cdmc795.jpg', 'land656.jpg', 'BXP0035855_P.jpg',
-      '50092.jpg', 'Desert_de_Gobi.jpg', 'land645.jpg', 'beach_02_10_yahoo.jpg', 'NA008867.jpg',
-      'beach_91_12_flickr.jpg', 'AA019096.jpg', 'des14.jpg', '034medanos.jpg', 'NA007446.jpg',
-      'natu539.jpg', 'mountain_10_04_askl.jpg', '480075.jpg', 'natu539.jpg', 'land656.jpg',
-      'AA005940.jpg', 'beach_165_20_flickr.jpg', 'Lone Palm, Sahara Desert-1.jpg', 'AIP0005723_P.jpg', 'land526.jpg',
-      'beach_138_10_flickr.jpg', 'DVP4967429_P.jpg', 'des22.jpg', 'natu89.jpg', 'beach_26_19_altavista.jpg',
-      'Lone Palm, Sahara Desert-1.jpg', 'land658.jpg', '480075.jpg', 'land616.jpg', 'beach_91_12_flickr.jpg',
-      'BXP0035856_P.jpg', 'AA020480.jpg', 'n251011.jpg', 'BXP0035855_P.jpg', 'n251011.jpg',
-      'NA006526.jpg', 'beach_115_11_flickr.jpg', 'NA004783.jpg', 'land645.jpg', 'AA020480.jpg',
-      'NA006361.jpg', 'natu89.jpg', 'land701.jpg', 'G02 Gobi Desert Sand Dunes.jpg', '611sahara.jpg',
-      'beach_34_01_flickr.jpg', 'land657.jpg', 'NA001302.jpg', 'MWP0020668_P.jpg', 'des16.jpg',
-      'mountain_10_04_askl.jpg', '50092.jpg', 'des18.jpg', '255055.jpg', 'land658.jpg',
-      'des15.jpg', 'AA005940.jpg', 'land657.jpg', 'des16.jpg', 'forest_34_08_altavista.jpg',
-      'NA006111.jpg', 'NA004090.jpg', 'des13.jpg', 'NA007446.jpg', 'des21.jpg',
-      'beach_40_21_flickr.jpg', 'des21.jpg',
+      'beach_02_10_yahoo.jpg', 'beach_115_11_flickr.jpg', 'NA000915.jpg', 'NA004090.jpg', 'AA005954.jpg',
+      'cdmc795.jpg', 'beach_34_01_flickr.jpg', 'G02 Gobi Desert Sand Dunes.jpg', 'forest_34_08_altavista.jpg', 'des17.jpg',
+      'beach_26_19_altavista.jpg', 'BXP0035856_P.jpg', 'des18.jpg', 'land564.jpg', '800px-Towering_Sand_Dunes.jpg',
+      '255055.jpg', 'AIP0005723_P.jpg', 'NA006111.jpg', '034medanos.jpg', 'land526.jpg',
+      'DVP4967429_P.jpg', 'NA006361.jpg', 'land656.jpg', 'BXP0035855_P.jpg', '50092.jpg',
+      'land645.jpg', 'beach_91_12_flickr.jpg', 'NA007446.jpg', 'natu539.jpg', 'mountain_10_04_askl.jpg',
+      '480075.jpg', 'AA005940.jpg', 'Lone Palm, Sahara Desert-1.jpg', 'natu89.jpg', 'land658.jpg',
+      'AA020480.jpg', 'n251011.jpg', 'land657.jpg', 'des16.jpg', 'des21.jpg',
     ],
     mountain: [
       'FreeFoto_mountain_1_31.jpg', 'mountain05.jpg', 'mountain62.jpg', 'FreeFoto_mountain_1_10.jpg', 'FreeFoto_mountain_4_8.jpg',
-      'land16.jpg', 'FreeFoto_mountain_4_28.jpg', 'cdmc181.jpg', 'FreeFoto_mountain_4_21.jpg', 'FreeFoto_mountain_4_28.jpg',
-      'FreeFoto_mountain_4_18.jpg', 'land680.jpg', 'FreeFoto_mountain_1_44.jpg', 'mountain86.jpg', 'FreeFoto_mountain_4_45.jpg',
-      'mountain77.jpg', 'land680.jpg', 'land18.jpg', 'land387.jpg', 'mountain06.jpg',
-      'FreeFoto_mountain_4_45.jpg', 'CMP0003645_P.jpg', 'BXP0029825_P.jpg', 'land145.jpg', 'land143.jpg',
-      'mountain08.jpg', 'FreeFoto_mountain_1_31.jpg', 'DVP4969295_P.jpg', 'mountain59.jpg', 'DVP4967994_P.jpg',
-      'mountain_03_02_askl.jpg', 'FreeFoto_mountain_1_15.jpg', 'mountain64.jpg', 'mountain93.jpg', 'mountain94.jpg',
-      'mountain08.jpg', 'mountain59.jpg', 'land143.jpg', 'FreeFoto_mountain_4_47.jpg', 'FreeFoto_mountain_6_42.jpg',
-      'land188.jpg', 'land130.jpg', 'mountain76.jpg', 'mountain52.jpg', 'FreeFoto_mountain_1_2.jpg',
-      'cdmc181.jpg', 'FreeFoto_mountain_3_34.jpg', 'FreeFoto_mountain_1_2.jpg', 'land387.jpg', 'mountain50.jpg',
-      'FreeFoto_mountain_4_36.jpg', 'land179.jpg', 'mountain09.jpg', 'FreeFoto_mountain_1_5.jpg', 'mountain76.jpg',
-      'mountain80.jpg', 'mountain54.jpg', 'mountain50.jpg', 'BXP0029825_P.jpg', 'FreeFoto_mountain_1_19.jpg',
-      'mountain94.jpg', 'land210.jpg', 'FreeFoto_mountain_7_1.jpg', 'FreeFoto_mountain_3_29.jpg', 'FreeFoto_mountain_8_5.jpg',
-      'FreeFoto_mountain_3_29.jpg', 'mountain64.jpg', 'FreeFoto_mountain_1_36.jpg', 'FreeFoto_mountain_1_5.jpg', 'FAN2009894_P.jpg',
-      'land18.jpg', 'crique_13_08_google.jpg', 'FreeFoto_mountain_4_36.jpg', 'FreeFoto_mountain_1_15.jpg', 'land161.jpg',
-      'mountain06.jpg', 'mountain_03_02_askl.jpg', 'FreeFoto_mountain_1_36.jpg', 'n44002.jpg', 'mountain19.jpg',
-      'mountain19.jpg', 'mountain62.jpg', 'FreeFoto_mountain_4_18.jpg', 'FreeFoto_mountain_3_34.jpg', 'FreeFoto_mountain_4_47.jpg',
-      'FreeFoto_mountain_4_8.jpg', 'land161.jpg', 'mountain52.jpg', 'FreeFoto_mountain_1_44.jpg', 'FreeFoto_mountain_8_5.jpg',
-      'land16.jpg', 'mountain77.jpg', 'n44002.jpg', 'FreeFoto_mountain_1_37.jpg', 'mountain86.jpg',
-      'FAN2009894_P.jpg', 'mountain09.jpg', 'FreeFoto_mountain_1_37.jpg', 'land210.jpg', 'crique_13_08_google.jpg',
-      'FreeFoto_mountain_4_21.jpg', 'FreeFoto_mountain_1_10.jpg', 'land165.jpg', 'mountain80.jpg', 'FreeFoto_mountain_7_1.jpg',
-      'land132.jpg', 'land165.jpg', 'land188.jpg', 'mountain54.jpg', 'CMP0003645_P.jpg',
-      'land145.jpg', 'land130.jpg', 'mountain93.jpg', 'DVP4969295_P.jpg', 'land132.jpg',
-      'DVP4967994_P.jpg', 'FreeFoto_mountain_6_42.jpg', 'land179.jpg', 'FreeFoto_mountain_1_19.jpg',
+      'land16.jpg', 'FreeFoto_mountain_4_28.jpg', 'cdmc181.jpg', 'FreeFoto_mountain_4_21.jpg', 'FreeFoto_mountain_4_18.jpg',
+      'land680.jpg', 'FreeFoto_mountain_1_44.jpg', 'mountain86.jpg', 'FreeFoto_mountain_4_45.jpg', 'mountain77.jpg',
+      'land18.jpg', 'land387.jpg', 'mountain06.jpg', 'CMP0003645_P.jpg', 'BXP0029825_P.jpg',
+      'land145.jpg', 'land143.jpg', 'mountain08.jpg', 'DVP4969295_P.jpg', 'mountain59.jpg',
+      'DVP4967994_P.jpg', 'mountain_03_02_askl.jpg', 'FreeFoto_mountain_1_15.jpg', 'mountain64.jpg', 'mountain93.jpg',
+      'mountain94.jpg', 'FreeFoto_mountain_4_47.jpg', 'FreeFoto_mountain_6_42.jpg', 'land188.jpg', 'land130.jpg',
+      'mountain76.jpg', 'mountain52.jpg', 'FreeFoto_mountain_1_2.jpg', 'FreeFoto_mountain_3_34.jpg', 'mountain50.jpg',
+      'FreeFoto_mountain_4_36.jpg', 'land179.jpg', 'mountain09.jpg', 'FreeFoto_mountain_1_5.jpg', 'mountain80.jpg',
+      'mountain54.jpg', 'FreeFoto_mountain_1_19.jpg', 'land210.jpg', 'FreeFoto_mountain_7_1.jpg', 'FreeFoto_mountain_3_29.jpg',
+      'FreeFoto_mountain_8_5.jpg', 'FreeFoto_mountain_1_36.jpg', 'FAN2009894_P.jpg', 'crique_13_08_google.jpg', 'land161.jpg',
+      'n44002.jpg', 'mountain19.jpg', 'land165.jpg', 'land132.jpg',
     ]
   }
 };
 
 // --- 音声ファイルリスト ---
-// (この部分も変更ありません。元のコードのままにしてください)
 const raw_sound_files = [
   'hu.wav', 'ri.wav', 'go.wav', 'ta.wav', 'no.wav', 'zu.wav', 'wa.wav', 'ku.wav', 'mu.wav', 'na.wav', 'zi.wav', 'do.wav',
   'ze.wav', 'pe.wav', 'za.wav', 'pu.wav', 'se.wav', 'ko.wav', 'ga.wav', 'zo.wav', 'gu.wav', 'me.wav', 'po.wav',
@@ -321,9 +259,6 @@ const raw_sound_files = [
   'to.wav', 'bu.wav', 'ma.wav', 'pa.wav', 'ki.wav', 'ti.wav', 'pi.wav', 'yu.wav', 'ho.wav', 'he.wav', 'ni.wav',
   'be.wav', 'tu.wav'
 ];
-
-// --- これ以降の実験ロジック、タイムライン定義はすべて元のコードのままです ---
-// --- (変更がないため、省略せずにそのままここにペーストしてください) ---
 
 // --- ファイルパスの自動生成 ---
 const image_files = { indoor: {}, outdoor: {} };
