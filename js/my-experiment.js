@@ -1,24 +1,17 @@
-// ファイルパス: my-experiment.js (修正後の全コード)
-
 /**
- * 【修正箇所】
- * 実験結果のJSONデータをサーバーレス関数経由でGoogle Driveに保存する関数
+ * 実験結果をサーバーレス関数経由でGoogle Driveに保存する関数
  * @param {object} jsonData - 保存するJSON形式のデータオブジェクト
  */
 async function saveExperimentResult(jsonData) {
     try {
-        // 作成したサーバーレス関数を呼び出します。
-        // '/.netlify/functions/saveToDrive' という決まったパスでアクセスできます。
         const response = await fetch('/.netlify/functions/saveToDrive', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            // JavaScriptオブジェクトをそのままJSON文字列として送信します
             body: JSON.stringify(jsonData),
         });
 
-        // サーバーからの応答が正常でない場合（エラーが発生した場合）
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(`Server error: ${response.status} - ${errorData.error}`);
@@ -26,6 +19,8 @@ async function saveExperimentResult(jsonData) {
 
         const result = await response.json();
         console.log(result.message); // "Result saved successfully!"
+        console.log("ファイルID:", result.id);
+        console.log("ファイル名:", result.name);
         console.log('実験結果が正常に保存されました。');
 
     } catch (error) {
@@ -34,15 +29,16 @@ async function saveExperimentResult(jsonData) {
     }
 }
 
-
+// =======================
 // jsPsychの初期化
+// =======================
 const jsPsych = initJsPsych({
   on_finish: async function() {
-    // 【修正箇所】実験終了時にJSONデータを取得し、サーバーレス関数を呼び出す
+    // 実験終了時にJSONデータを取得し、サーバーレス関数を呼び出す
     const resultData = jsPsych.data.get().json();
-    await saveExperimentResult(JSON.parse(resultData)); // 非同期処理の完了を待つ
+    await saveExperimentResult(JSON.parse(resultData));
 
-    // --- 元のコードにあった結果表示のロジックをここへ移動 ---
+    // --- 元のコードの結果表示処理 ---
     const learning_results = jsPsych.data.get().filter({ task_phase: 'learning' }).values();
     const image_test_results = jsPsych.data.get().filter({ task_phase: 'image_recognition' }).values();
     const sound_test_results = jsPsych.data.get().filter({ task_phase: 'sound_recognition' }).values();
@@ -100,6 +96,7 @@ const jsPsych = initJsPsych({
     jsPsych.getDisplayElement().innerHTML = html;
   }
 });
+
 
 // 実験のタイムラインを格納する配列
 const timeline = [];
