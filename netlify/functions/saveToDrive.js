@@ -9,6 +9,8 @@ exports.handler = async function (event) {
 
   try {
     // 1. クライアント（ブラウザ）から送られてきた実験データを解析
+    console.log("experimentData received:", experimentData);
+
     const experimentData = JSON.parse(event.body);
 
     // 2. Google Drive APIで認証
