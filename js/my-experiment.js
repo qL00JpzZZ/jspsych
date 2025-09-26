@@ -29,16 +29,20 @@ async function saveExperimentResult(jsonData) {
     }
 }
 
-// =======================
 // jsPsychの初期化
-// =======================
 const jsPsych = initJsPsych({
   on_finish: async function() {
-    // 実験終了時にJSONデータを取得し、サーバーレス関数を呼び出す
-    const resultData = jsPsych.data.get().json();
-    await saveExperimentResult(JSON.parse(resultData));
+    // jsPsychから全データを「オブジェクトの配列」として直接取得
+    const resultData = jsPsych.data.get().values();
+    
+    // （念のため）コンソールに出力して中身を確認
+    console.log("--- 保存するデータ ---");
+    console.log(resultData);
 
-    // --- 元のコードの結果表示処理 ---
+    // サーバーレス関数を呼び出してデータを送信
+    await saveExperimentResult(resultData); 
+    
+    // --- 以下、結果表示ロジック (変更なし) ---
     const learning_results = jsPsych.data.get().filter({ task_phase: 'learning' }).values();
     const image_test_results = jsPsych.data.get().filter({ task_phase: 'image_recognition' }).values();
     const sound_test_results = jsPsych.data.get().filter({ task_phase: 'sound_recognition' }).values();
@@ -96,7 +100,6 @@ const jsPsych = initJsPsych({
     jsPsych.getDisplayElement().innerHTML = html;
   }
 });
-
 
 // 実験のタイムラインを格納する配列
 const timeline = [];
