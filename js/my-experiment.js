@@ -1,5 +1,3 @@
-// ファイルパス: js/my-experiment.js
-
 // -------------------- ヘルパー関数 --------------------
 // ファイル名に使えない文字を置換・削除する
 function sanitizeFileNamePart(s) {
@@ -16,7 +14,7 @@ function formatPercentFraction(correctCount, totalCount) {
 // -------------------- サーバー送信関数 --------------------
 async function saveCsvToServer(filename, csvText) {
   try {
-    // 【Netlify用のパス】
+    // Netlify用のパス
     const response = await fetch('/.netlify/functions/saveToDrive', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -44,31 +42,45 @@ const jsPsych = initJsPsych({
   on_finish: async function() {
     jsPsych.getDisplayElement().innerHTML = '<p>結果を保存しています。しばらくお待ちください...</p>';
 
-    // 1. 画像テストと音声テストの正答率を計算
-    const image_test_results = jsPsych.data.get().filter({ task_phase: 'image_recognition' });
-    const sound_test_results = jsPsych.data.get().filter({ task_phase: 'sound_recognition' });
+    // -------------------- デバッグコード START --------------------
 
-    const image_total = image_test_results.count();
-    const image_correct = image_test_results.filter({ correct: true }).count();
+    const image_test_results = jsPsych.data.get().filter({ task_phase: 'image_recognition' }).values();
+    const sound_test_results = jsPsych.data.get().filter({ task_phase: 'sound_recognition' }).values();
+
+    // 1. 画像テストの正答率を計算（詳細なログ付き）
+    console.log("--- Calculating Image Accuracy ---");
+    const image_total = image_test_results.length;
+    const image_correct = image_test_results.filter((trial, index) => {
+      const isMatch = trial.response === trial.correct_response;
+      // 1試行ごとに、どの値が比較されているかを出力します
+      console.log(`Image Trial #${index}: Response='${trial.response}' (type: ${typeof trial.response}), Correct='${trial.correct_response}' (type: ${typeof trial.correct_response}), isMatch=${isMatch}`);
+      return isMatch;
+    }).length;
     const image_percent = formatPercentFraction(image_correct, image_total);
+    console.log(`Final Calculation: ${image_correct} / ${image_total}`);
 
-    const sound_total = sound_test_results.count();
-    const sound_correct = sound_test_results.filter({ correct: true }).count();
+    // 2. 音声テストの正答率を計算（詳細なログ付き）
+    console.log("--- Calculating Sound Accuracy ---");
+    const sound_total = sound_test_results.length;
+    const sound_correct = sound_test_results.filter((trial, index) => {
+      const isMatch = trial.response === trial.correct_response;
+      // 1試行ごとに、どの値が比較されているかを出力します
+      console.log(`Sound Trial #${index}: Response='${trial.response}' (type: ${typeof trial.response}), Correct='${trial.correct_response}' (type: ${typeof trial.correct_response}), isMatch=${isMatch}`);
+      return isMatch;
+    }).length;
     const sound_percent = formatPercentFraction(sound_correct, sound_total);
+    console.log(`Final Calculation: ${sound_correct} / ${sound_total}`);
 
-    // 2. jsPsychの全データをCSV形式の文字列として取得
+    // -------------------- デバッグコード END --------------------
+
+    // 3. CSV生成と保存
     let csvData = jsPsych.data.get().csv();
-
-    // 3. CSVの末尾にサマリー情報を追記
     const summaryHeader = "\n--- Summary ---";
     const summaryData = `Image Recognition Accuracy,${image_percent}\nSound Pair Accuracy,${sound_percent}`;
     const csvToSave = csvData + "\n" + summaryHeader + "\n" + summaryData;
-
-    // 4. ファイル名を生成（イニシャル + 日時）
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `${participantInitials}_${timestamp}.csv`;
 
-    // 5. サーバーへ送信
     try {
       await saveCsvToServer(filename, csvToSave);
       console.log('保存成功');
@@ -77,11 +89,8 @@ const jsPsych = initJsPsych({
       alert('結果の保存中にエラーが発生しました。詳細は開発者コンソールを確認してください。');
     }
 
-    // 6. 画面への最終結果表示
+    // 4. 画面への最終結果表示
     const learning_results = jsPsych.data.get().filter({ task_phase: 'learning' }).values();
-    const final_image_test_results = image_test_results.values();
-    const final_sound_test_results = sound_test_results.values();
-    
     const getFileName = (path) => path.split('/').pop();
     const keyToAnswer = (key, type) => {
         if (type === 'indoor_outdoor') return key === 'j' ? '屋内' : '屋外';
@@ -109,7 +118,7 @@ const jsPsych = initJsPsych({
     html += `<h3>画像再認テストの結果 (${image_percent})</h3>
       <table border="1" style="margin: auto; border-collapse: collapse; text-align: left; margin-bottom: 20px;">
         <tr><th style="padding: 8px;">画像ファイル</th><th style="padding: 8px;">正解</th><th style="padding: 8px;">回答</th><th style="padding: 8px;">正誤</th></tr>`;
-    final_image_test_results.forEach(trial => {
+    image_test_results.forEach(trial => {
       const is_correct = trial.response === trial.correct_response;
       html += `<tr style="background-color: ${is_correct ? '#d4edda' : '#f8d7da'}"><td style="padding: 8px;">${trial.image_filename}</td><td style="padding: 8px;">${keyToCorrectAnswer(trial.correct_response, 'seen')}</td><td style="padding: 8px;">${keyToAnswer(trial.response, 'seen')}</td><td style="padding: 8px;">${is_correct ? '正解' : '不正解'}</td></tr>`;
     });
@@ -118,7 +127,7 @@ const jsPsych = initJsPsych({
     html += `<h3>音声ペア再認テストの結果 (${sound_percent})</h3>
       <table border="1" style="margin: auto; border-collapse: collapse; text-align: left;">
         <tr><th style="padding: 8px;">提示ペア(1組目)</th><th style="padding: 8px;">提示ペア(2組目)</th><th style="padding: 8px;">正解</th><th style="padding: 8px;">回答</th><th style="padding: 8px;">正誤</th></tr>`;
-    final_sound_test_results.forEach(trial => {
+    sound_test_results.forEach(trial => {
         const is_correct = trial.response === trial.correct_response;
         const first_pair = trial.presentation_order[0] === 'old' ? trial.old_pair : trial.new_pair;
         const second_pair = trial.presentation_order[1] === 'old' ? trial.old_pair : trial.new_pair;
@@ -310,6 +319,7 @@ const raw_sound_files = [
   'to.wav', 'bu.wav', 'ma.wav', 'pa.wav', 'ki.wav', 'ti.wav', 'pi.wav', 'yu.wav', 'ho.wav', 'he.wav', 'ni.wav',
   'be.wav', 'tu.wav'
 ];
+
 // --- ファイルパスの自動生成 ---
 const image_files = { indoor: {}, outdoor: {} };
 for (const main_cat_key in raw_image_files) {
@@ -321,6 +331,7 @@ for (const main_cat_key in raw_image_files) {
   }
 }
 const all_sounds = raw_sound_files.map(filename => `sounds/${filename}`);
+
 // =========================================================================
 // 1. 学習フェーズの刺激生成
 // =========================================================================
@@ -371,6 +382,7 @@ shuffled_blocks.forEach(block => {
     learning_stimuli.push({ image: learning_images[image_counter++], sound: block.sound_X, sound_pattern: 'パターンX' });
   }
 });
+
 // =========================================================================
 // 2. テストフェーズの刺激生成
 // =========================================================================
@@ -398,6 +410,7 @@ for (let i = 0; i < NUM_AB_PAIRS; i++) {
     correct_response: presentation_order[0] === 'old' ? 'j' : 'k'
   });
 }
+
 // =========================================================================
 // デバッグ情報画面の生成
 // =========================================================================
@@ -438,6 +451,7 @@ const debug_info_trial = {
   type: jsPsychHtmlKeyboardResponse,
   stimulus: debug_html
 };
+
 // =========================================================================
 // 3. タイムラインの構築
 // =========================================================================
@@ -581,5 +595,6 @@ const sound_recognition_block = {
   timeline_variables: sound_2afc_stimuli
 };
 timeline.push(sound_recognition_block);
+
 // --- 実験の実行 ---
 jsPsych.run(timeline);
