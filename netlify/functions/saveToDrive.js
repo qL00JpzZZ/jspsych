@@ -24,16 +24,18 @@ exports.handler = async function (event) {
       name: experimentData.filename,
       parents: [process.env.GOOGLE_DRIVE_FOLDER_ID],
     };
+
     const media = {
       mimeType: 'text/csv',
       body: experimentData.csv,
     };
 
-    // 「supportsAllDrives: true」を削除し、マイドライブに保存する
     await drive.files.create({
       resource: fileMetadata,
       media: media,
       fields: 'id',
+      // 【↓↓↓ この1行を追加してください ↓↓↓】
+      supportsAllDrives: true,
     });
 
     return {
