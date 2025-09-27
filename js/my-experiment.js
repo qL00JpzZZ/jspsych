@@ -1,66 +1,101 @@
-/**
- * 実験結果をサーバーレス関数経由でGoogle Driveに保存する関数
- * @param {object} jsonData - 保存するJSON形式のデータオブジェクト
- */
-async function saveExperimentResult(jsonData) {
-    try {
-        const response = await fetch('/.netlify/functions/saveToDrive', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(jsonData),
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(`Server error: ${response.status} - ${errorData.error}`);
-        }
-
-        const result = await response.json();
-        console.log(result.message); // "Result saved successfully!"
-        console.log("ファイルID:", result.id);
-        console.log("ファイル名:", result.name);
-        console.log('実験結果が正常に保存されました。');
-
-    } catch (error) {
-        console.error('Failed to save experiment result:', error);
-        alert('エラーが発生しました。結果を保存できませんでした。');
-    }
+// -------------------- ヘルパー関数 --------------------
+// ファイル名に使えない文字を置換・削除する
+function sanitizeFileNamePart(s) {
+  if (!s) return 'unknown';
+  return String(s).trim().replace(/[,\/\\()?%#:*"|<>]/g, '_').replace(/\s+/g, '_').slice(0, 50);
+}
+// 正答率を計算・フォーマットする
+function formatPercentFraction(correctCount, totalCount) {
+  if (totalCount === 0) return 'N/A';
+  const percent = (correctCount / totalCount) * 100;
+  return `${percent.toFixed(1)}%`; // 小数点以下1桁に統一
 }
 
-// jsPsychの初期化
+// -------------------- サーバー送信関数 --------------------
+async function saveCsvToServer(filename, csvText) {
+  try {
+    // Vercelの場合のパス
+    const response = await fetch('/api/saveToDrive', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename: filename, csv: csvText })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Server error: ${response.status} - ${errorData.error}`);
+    }
+    const result = await response.json();
+    console.log('サーバーからの応答:', result);
+    return result;
+
+  } catch (error) {
+    console.error('結果の保存に失敗しました:', error);
+    throw error;
+  }
+}
+
+// -------------------- jsPsychの初期化と実験フロー --------------------
+let participantInitials = 'unknown'; // グローバル変数としてイニシャルを保持
+
 const jsPsych = initJsPsych({
   on_finish: async function() {
-    // jsPsychから全データを「オブジェクトの配列」として直接取得
-    const resultData = jsPsych.data.get().values();
-    
-    // （念のため）コンソールに出力して中身を確認
-    console.log("--- 保存するデータ ---");
-    console.log(resultData);
+    jsPsych.getDisplayElement().innerHTML = '<p>結果を保存しています。しばらくお待ちください...</p>';
 
-    // サーバーレス関数を呼び出してデータを送信
-    await saveExperimentResult(resultData); 
-    
-    // --- 以下、結果表示ロジック (変更なし) ---
+    // 1. 画像テストと音声テストの正答率を計算
+    const image_test_results = jsPsych.data.get().filter({ task_phase: 'image_recognition' });
+    const sound_test_results = jsPsych.data.get().filter({ task_phase: 'sound_recognition' });
+
+    const image_total = image_test_results.count();
+    const image_correct = image_test_results.filter({ correct: true }).count();
+    const image_percent = formatPercentFraction(image_correct, image_total);
+
+    const sound_total = sound_test_results.count();
+    const sound_correct = sound_test_results.filter({ correct: true }).count();
+    const sound_percent = formatPercentFraction(sound_correct, sound_total);
+
+    // 2. jsPsychの全データをCSV形式の文字列として取得
+    let csvData = jsPsych.data.get().csv();
+
+    // 3. CSVの末尾にサマリー情報を追記
+    const summaryHeader = "\n--- Summary ---";
+    const summaryData = `Image Recognition Accuracy,${image_percent}\nSound Pair Accuracy,${sound_percent}`;
+    const csvToSave = csvData + "\n" + summaryHeader + "\n" + summaryData;
+
+    // 4. ファイル名を生成（イニシャル + 日時）
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `${participantInitials}_${timestamp}.csv`;
+
+    // 5. サーバーへ送信
+    try {
+      await saveCsvToServer(filename, csvToSave);
+      console.log('保存成功');
+    } catch (err) {
+      console.error('サーバーへの保存中にエラーが発生しました:', err);
+      alert('結果の保存中にエラーが発生しました。詳細は開発者コンソールを確認してください。');
+    }
+
+    // 6. 画面への最終結果表示
     const learning_results = jsPsych.data.get().filter({ task_phase: 'learning' }).values();
-    const image_test_results = jsPsych.data.get().filter({ task_phase: 'image_recognition' }).values();
-    const sound_test_results = jsPsych.data.get().filter({ task_phase: 'sound_recognition' }).values();
-
+    const final_image_test_results = image_test_results.values();
+    const final_sound_test_results = sound_test_results.values();
+    
     const getFileName = (path) => path.split('/').pop();
     const keyToAnswer = (key, type) => {
         if (type === 'indoor_outdoor') return key === 'j' ? '屋内' : '屋外';
         if (type === 'seen') return key === 'j' ? '見た' : '見ていない';
         if (type === 'heard_choice') return key === 'j' ? '1組目' : '2組目';
+        return key;
     };
     const keyToCorrectAnswer = (correct_response, type) => {
         if (type === 'seen') return correct_response === 'j' ? '見た' : '見ていない';
         if (type === 'heard_choice') return correct_response === 'j' ? '1組目' : '2組目';
+        return correct_response;
     };
 
     let html = `
       <h2>実験結果の要約</h2>
-      <p>ご協力ありがとうございました。結果は正常に保存されました。</p>
+      <p>ご協力ありがとうございました。結果は保存されました。</p>
       <h3>学習フェーズの結果</h3>
       <table border="1" style="margin: auto; border-collapse: collapse; text-align: left; margin-bottom: 20px;">
         <tr><th style="padding: 8px;">画像ファイル</th><th style="padding: 8px;">音声パターン</th><th style="padding: 8px;">回答</th></tr>`;
@@ -69,19 +104,19 @@ const jsPsych = initJsPsych({
     });
     html += `</table>`;
 
-    html += `<h3>画像再認テストの結果</h3>
+    html += `<h3>画像再認テストの結果 (${image_percent})</h3>
       <table border="1" style="margin: auto; border-collapse: collapse; text-align: left; margin-bottom: 20px;">
         <tr><th style="padding: 8px;">画像ファイル</th><th style="padding: 8px;">正解</th><th style="padding: 8px;">回答</th><th style="padding: 8px;">正誤</th></tr>`;
-    image_test_results.forEach(trial => {
+    final_image_test_results.forEach(trial => {
       const is_correct = trial.response === trial.correct_response;
       html += `<tr style="background-color: ${is_correct ? '#d4edda' : '#f8d7da'}"><td style="padding: 8px;">${trial.image_filename}</td><td style="padding: 8px;">${keyToCorrectAnswer(trial.correct_response, 'seen')}</td><td style="padding: 8px;">${keyToAnswer(trial.response, 'seen')}</td><td style="padding: 8px;">${is_correct ? '正解' : '不正解'}</td></tr>`;
     });
     html += `</table>`;
     
-    html += `<h3>音声ペア再認テストの結果</h3>
+    html += `<h3>音声ペア再認テストの結果 (${sound_percent})</h3>
       <table border="1" style="margin: auto; border-collapse: collapse; text-align: left;">
         <tr><th style="padding: 8px;">提示ペア(1組目)</th><th style="padding: 8px;">提示ペア(2組目)</th><th style="padding: 8px;">正解</th><th style="padding: 8px;">回答</th><th style="padding: 8px;">正誤</th></tr>`;
-    sound_test_results.forEach(trial => {
+    final_sound_test_results.forEach(trial => {
         const is_correct = trial.response === trial.correct_response;
         const first_pair = trial.presentation_order[0] === 'old' ? trial.old_pair : trial.new_pair;
         const second_pair = trial.presentation_order[1] === 'old' ? trial.old_pair : trial.new_pair;
@@ -101,8 +136,23 @@ const jsPsych = initJsPsych({
   }
 });
 
-// 実験のタイムラインを格納する配列
+// -------------------- イニシャル入力試行 --------------------
+const initials_trial = {
+  type: jsPsychSurveyText,
+  questions: [
+    { prompt: "実験を開始します。あなたのイニシャルを半角英数字で入力してください（例: ST）", name: "initials", required: true, placeholder: "例: ST" }
+  ],
+  button_label: "実験を開始する",
+  on_finish: function(data) {
+    participantInitials = sanitizeFileNamePart(data.response.initials);
+    jsPsych.data.addProperties({participant_initials: participantInitials});
+  }
+};
+
+// -------------------- 実験タイムラインの定義 --------------------
 const timeline = [];
+// タイムラインの最初にイニシャル入力画面を追加
+timeline.push(initials_trial);
 
 // --- 画像ファイルリスト ---
 const raw_image_files = {
@@ -249,7 +299,6 @@ const raw_image_files = {
     ]
   }
 };
-
 // --- 音声ファイルリスト ---
 const raw_sound_files = [
   'hu.wav', 'ri.wav', 'go.wav', 'ta.wav', 'no.wav', 'zu.wav', 'wa.wav', 'ku.wav', 'mu.wav', 'na.wav', 'zi.wav', 'do.wav',
@@ -259,7 +308,6 @@ const raw_sound_files = [
   'to.wav', 'bu.wav', 'ma.wav', 'pa.wav', 'ki.wav', 'ti.wav', 'pi.wav', 'yu.wav', 'ho.wav', 'he.wav', 'ni.wav',
   'be.wav', 'tu.wav'
 ];
-
 // --- ファイルパスの自動生成 ---
 const image_files = { indoor: {}, outdoor: {} };
 for (const main_cat_key in raw_image_files) {
@@ -271,7 +319,6 @@ for (const main_cat_key in raw_image_files) {
   }
 }
 const all_sounds = raw_sound_files.map(filename => `sounds/${filename}`);
-
 // =========================================================================
 // 1. 学習フェーズの刺激生成
 // =========================================================================
@@ -322,7 +369,6 @@ shuffled_blocks.forEach(block => {
     learning_stimuli.push({ image: learning_images[image_counter++], sound: block.sound_X, sound_pattern: 'パターンX' });
   }
 });
-
 // =========================================================================
 // 2. テストフェーズの刺激生成
 // =========================================================================
@@ -333,17 +379,14 @@ const image_recognition_stimuli = [
   ...learning_images.map(img => ({ image: img, status: 'old', correct_response: 'j' })),
   ...new_images_for_test.map(img => ({ image: img, status: 'new', correct_response: 'k' }))
 ];
-
 const unused_sounds = shuffled_sounds.slice(TOTAL_LEARNING_TRIALS);
 const new_sound_pairs = [];
 for (let i = 0; i < NUM_AB_PAIRS; i++) {
   new_sound_pairs.push([unused_sounds[i*2], unused_sounds[i*2 + 1]]);
 }
-
 const sound_2afc_stimuli = [];
 const shuffled_old_pairs = jsPsych.randomization.shuffle(learned_sound_pairs);
 const shuffled_new_pairs = jsPsych.randomization.shuffle(new_sound_pairs);
-
 for (let i = 0; i < NUM_AB_PAIRS; i++) {
   const presentation_order = jsPsych.randomization.shuffle(['old', 'new']);
   sound_2afc_stimuli.push({
@@ -353,7 +396,6 @@ for (let i = 0; i < NUM_AB_PAIRS; i++) {
     correct_response: presentation_order[0] === 'old' ? 'j' : 'k'
   });
 }
-
 // =========================================================================
 // デバッグ情報画面の生成
 // =========================================================================
@@ -394,7 +436,6 @@ const debug_info_trial = {
   type: jsPsychHtmlKeyboardResponse,
   stimulus: debug_html
 };
-
 // =========================================================================
 // 3. タイムラインの構築
 // =========================================================================
@@ -408,7 +449,6 @@ const preload_trial = {
 };
 timeline.push(preload_trial);
 timeline.push(debug_info_trial);
-
 const instructions_learning = {
   type: jsPsychHtmlKeyboardResponse,
   stimulus: `
@@ -421,7 +461,6 @@ const instructions_learning = {
   `
 };
 timeline.push(instructions_learning);
-
 const learning_procedure = {
   type: jsPsychHtmlKeyboardResponse,
   stimulus: function() {
@@ -448,7 +487,6 @@ const learning_trials = {
   randomize_order: false
 };
 timeline.push(learning_trials);
-
 const instructions_test = {
   type: jsPsychHtmlKeyboardResponse,
   stimulus: `
@@ -459,7 +497,6 @@ const instructions_test = {
   `
 };
 timeline.push(instructions_test);
-
 const image_recognition_procedure = {
   type: jsPsychHtmlKeyboardResponse,
   stimulus: function() {
@@ -484,7 +521,6 @@ const image_recognition_block = {
   randomize_order: true
 };
 timeline.push(image_recognition_block);
-
 const instructions_sound_2afc = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: `
@@ -495,7 +531,6 @@ const instructions_sound_2afc = {
     `
 };
 timeline.push(instructions_sound_2afc);
-
 const sound_2afc_playback_trial = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: '<p style="font-size: 1.5em;">再生準備中...</p>',
@@ -503,34 +538,27 @@ const sound_2afc_playback_trial = {
     on_load: function() {
         const display_element = jsPsych.getDisplayElement();
         const stimulus_div = display_element.querySelector('#jspsych-html-keyboard-response-stimulus');
-
         const old_pair = jsPsych.timelineVariable('old_pair');
         const new_pair = jsPsych.timelineVariable('new_pair');
         const presentation_order = jsPsych.timelineVariable('presentation_order');
-
         const first_pair_sounds = presentation_order[0] === 'old' ? old_pair : new_pair;
         const second_pair_sounds = presentation_order[1] === 'old' ? old_pair : new_pair;
-
         const audio1 = new Audio(first_pair_sounds[0]);
         const audio2 = new Audio(first_pair_sounds[1]);
         const audio3 = new Audio(second_pair_sounds[0]);
         const audio4 = new Audio(second_pair_sounds[1]);
-
         const play_second_pair = () => {
             stimulus_div.innerHTML = '<p style="font-size: 1.5em;">2組目...</p>';
             setTimeout(() => { audio3.play(); }, 700);
         };
-
         audio1.addEventListener('ended', () => audio2.play());
         audio2.addEventListener('ended', play_second_pair);
         audio3.addEventListener('ended', () => audio4.play());
         audio4.addEventListener('ended', () => jsPsych.finishTrial());
-
         stimulus_div.innerHTML = '<p style="font-size: 1.5em;">1組目...</p>';
         audio1.play();
     }
 };
-
 const sound_2afc_response_trial = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: `
@@ -546,12 +574,10 @@ const sound_2afc_response_trial = {
         task_phase: 'sound_recognition'
     }
 };
-
 const sound_recognition_block = {
   timeline: [sound_2afc_playback_trial, sound_2afc_response_trial],
   timeline_variables: sound_2afc_stimuli
 };
 timeline.push(sound_recognition_block);
-
 // --- 実験の実行 ---
 jsPsych.run(timeline);

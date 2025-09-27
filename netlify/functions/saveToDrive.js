@@ -1,4 +1,4 @@
-// ファイルパス: netlify/functions/saveToDrive.js
+// ファイルパス: api/saveToDrive.js (Vercelの場合)
 
 const { google } = require('googleapis');
 
@@ -8,10 +8,8 @@ exports.handler = async function (event) {
   }
 
   try {
-    // 1. クライアント（ブラウザ）から送られてきた実験データを解析
     const experimentData = JSON.parse(event.body);
 
-    // 2. Google Drive APIで認証
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_CLIENT_EMAIL,
@@ -22,39 +20,33 @@ exports.handler = async function (event) {
 
     const drive = google.drive({ version: 'v3', auth });
 
-    // 3. ファイルメタデータと内容を準備
     const fileMetadata = {
-      name: experimentData.filename || `experiment_result_${new Date().toISOString()}.csv`,
-      parents: [process.env.GOOGLE_DRIVE_FOLDER_ID], // ← 修正
+      // クライアントから指定されたファイル名を使用する
+      name: experimentData.filename,
+      parents: [process.env.GOOGLE_DRIVE_FOLDER_ID],
     };
     const media = {
       mimeType: 'text/csv',
-      body: experimentData.csv, // CSV文字列
+      // クライアントから送られてきたCSVデータを使用する
+      body: experimentData.csv,
     };
 
-    // 4. Drive APIを呼び出してファイルをアップロード
     const file = await drive.files.create({
       resource: fileMetadata,
       media: media,
-      fields: 'id, name, parents',
+      fields: 'id',
     });
 
-    // 5. 成功レスポンスにファイル情報を含めて返す
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        message: 'Result saved successfully!',
-        id: file.data.id,
-        name: file.data.name,
-        folderId: process.env.GOOGLE_DRIVE_FOLDER_ID,
-      }),
+      body: JSON.stringify({ message: 'Result saved successfully!', fileId: file.data.id }),
     };
 
   } catch (error) {
     console.error('Error saving to Google Drive:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to save result.', detail: error.message }),
+      body: JSON.stringify({ error: 'Failed to save result.', details: error.message }),
     };
   }
 };
