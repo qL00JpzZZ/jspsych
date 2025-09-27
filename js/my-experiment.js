@@ -623,5 +623,5 @@ const sound_recognition_block = {
 };
 timeline.push(sound_recognition_block);
 
-// --- 実験の実行 ---
+
 jsPsych.run(timeline);
