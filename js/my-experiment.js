@@ -1,120 +1,52 @@
-// my-experiment.js
-// 完全版 — 実験開始時にイニシャルを取得、終了時にCSVへ画像/音声テスト正答率を追加してサーバへ送信
-
-// -------------------- ヘルパー --------------------
-function sanitizeFileNamePart(s) {
-  if (!s) return 'unknown';
-  return String(s).trim().replace(/[,\/\\()?%#:]/g, '_').replace(/\s+/g, '_').slice(0, 50);
-}
-function formatPercentFraction(correctCount, totalCount) {
-  if (!totalCount || totalCount === 0) return 'N/A';
-  const percent = (correctCount / totalCount) * 100;
-  // 有効数字3桁
-  let pStr = Number(percent).toPrecision(3);
-  // 指数表記回避
-  pStr = parseFloat(pStr).toString();
-  return `${pStr}%`;
-}
-
-// -------------------- サーバ送信関数 --------------------
-async function saveCsvToServer(filename, csvText) {
-  try {
-    const res = await fetch('/.netlify/functions/saveToDrive', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ filename: filename, csv: csvText })
-    });
-
-    if (!res.ok) {
-      let errText = `HTTP ${res.status}`;
-      try {
-        const errJson = await res.json();
-        if (errJson && errJson.error) errText += ` - ${errJson.error}`;
-        else if (errJson && errJson.message) errText += ` - ${errJson.message}`;
-      } catch (e) {}
-      throw new Error(`Server error: ${errText}`);
-    }
-    const result = await res.json();
-    console.log('サーバ応答:', result);
-    return result;
-  } catch (err) {
-    console.error('保存に失敗しました:', err);
-    throw err;
-  }
-}
-
-// -------------------- イニシャル入力トライアル --------------------
-let participantInitials = null;
-const initials_trial = {
-  type: jsPsychSurveyText,
-  questions: [
-    { prompt: "実験を開始します。イニシャルを入力してください（例：ABC）", name: "initials", required: true }
-  ],
-  button_label: "開始",
-  on_finish: function(data) {
+/**
+ * 実験結果をサーバーレス関数経由でGoogle Driveに保存する関数
+ * @param {object} jsonData - 保存するJSON形式のデータオブジェクト
+ */
+async function saveExperimentResult(jsonData) {
     try {
-      const responses = JSON.parse(data.responses || data.response || '{}');
-      const raw = responses.initials || responses['0'] || '';
-      participantInitials = sanitizeFileNamePart(raw || '');
-      if (!participantInitials) participantInitials = 'unknown';
-      jsPsych.data.addProperties({ participantInitials: participantInitials });
-      console.log('participantInitials =', participantInitials);
-    } catch (e) {
-      participantInitials = 'unknown';
-      jsPsych.data.addProperties({ participantInitials: participantInitials });
-      console.warn('イニシャル解析失敗。unknown を使用します。', e);
-    }
-  }
-};
+        const response = await fetch('/.netlify/functions/saveToDrive', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(jsonData),
+        });
 
-// -------------------- jsPsych 初期化 --------------------
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`Server error: ${response.status} - ${errorData.error}`);
+        }
+
+        const result = await response.json();
+        console.log(result.message); // "Result saved successfully!"
+        console.log("ファイルID:", result.id);
+        console.log("ファイル名:", result.name);
+        console.log('実験結果が正常に保存されました。');
+
+    } catch (error) {
+        console.error('Failed to save experiment result:', error);
+        alert('エラーが発生しました。結果を保存できませんでした。');
+    }
+}
+
+// jsPsychの初期化
 const jsPsych = initJsPsych({
   on_finish: async function() {
-    // 1) 生データ取得（配列）
-    const allData = jsPsych.data.get().values();
-    console.log("--- 保存対象データ ---");
-    console.log(allData);
+    // jsPsychから全データを「オブジェクトの配列」として直接取得
+    const resultData = jsPsych.data.get().values();
+    
+    // （念のため）コンソールに出力して中身を確認
+    console.log("--- 保存するデータ ---");
+    console.log(resultData);
 
-    // 2) 画像テストと音声テストの正答数カウント
+    // サーバーレス関数を呼び出してデータを送信
+    await saveExperimentResult(resultData); 
+    
+    // --- 以下、結果表示ロジック (変更なし) ---
+    const learning_results = jsPsych.data.get().filter({ task_phase: 'learning' }).values();
     const image_test_results = jsPsych.data.get().filter({ task_phase: 'image_recognition' }).values();
     const sound_test_results = jsPsych.data.get().filter({ task_phase: 'sound_recognition' }).values();
 
-    const image_total = image_test_results.length;
-    const image_correct = image_test_results.filter(tr => String(tr.response) === String(tr.correct_response)).length;
-
-    const sound_total = sound_test_results.length;
-    const sound_correct = sound_test_results.filter(tr => String(tr.response) === String(tr.correct_response)).length;
-
-    const image_percent = formatPercentFraction(image_correct, image_total);
-    const sound_percent = formatPercentFraction(sound_correct, sound_total);
-
-    console.log(`画像テスト: ${image_correct}/${image_total} => ${image_percent}`);
-    console.log(`音声テスト: ${sound_correct}/${sound_total} => ${sound_percent}`);
-
-    // 3) CSV生成（jsPsych の csv 出力にサマリー行を追加）
-    let baseCsv = jsPsych.data.get().csv();
-    const summaryLines = [
-      '',
-      `画像テストの正答率,${image_percent}`,
-      `音声テストの正答率,${sound_percent}`
-    ].join('\n');
-    const csvToSave = baseCsv + '\n' + summaryLines;
-
-    // 4) ファイル名
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const filename = `${participantInitials || 'unknown'}_${timestamp}.csv`;
-
-    // 5) サーバへ送信
-    try {
-      const serverResult = await saveCsvToServer(filename, csvToSave);
-      console.log('保存成功:', serverResult);
-    } catch (err) {
-      console.error('サーバ保存時にエラーが発生しました:', err);
-      alert('結果の保存中にエラーが発生しました。コンソールログを確認してください。');
-    }
-
-    // --- 以下、結果表示（既存ロジック） ---
-    const learning_results = jsPsych.data.get().filter({ task_phase: 'learning' }).values();
     const getFileName = (path) => path.split('/').pop();
     const keyToAnswer = (key, type) => {
         if (type === 'indoor_outdoor') return key === 'j' ? '屋内' : '屋外';
@@ -128,7 +60,7 @@ const jsPsych = initJsPsych({
 
     let html = `
       <h2>実験結果の要約</h2>
-      <p>ご協力ありがとうございました。結果は保存処理を行いました（詳しくはコンソールログを参照）。</p>
+      <p>ご協力ありがとうございました。結果は正常に保存されました。</p>
       <h3>学習フェーズの結果</h3>
       <table border="1" style="margin: auto; border-collapse: collapse; text-align: left; margin-bottom: 20px;">
         <tr><th style="padding: 8px;">画像ファイル</th><th style="padding: 8px;">音声パターン</th><th style="padding: 8px;">回答</th></tr>`;
@@ -169,9 +101,8 @@ const jsPsych = initJsPsych({
   }
 });
 
-// -------------------- 実験タイムライン --------------------
+// 実験のタイムラインを格納する配列
 const timeline = [];
-timeline.push(initials_trial);
 
 // --- 画像ファイルリスト ---
 const raw_image_files = {
@@ -465,7 +396,7 @@ const debug_info_trial = {
 };
 
 // =========================================================================
-// 3. タイムラインの構築（preload, instructions, trials）
+// 3. タイムラインの構築
 // =========================================================================
 const all_image_paths_for_preload = learning_images.concat(new_images_for_test);
 const all_sound_paths_for_preload = shuffled_sounds;
@@ -496,7 +427,6 @@ const learning_procedure = {
   stimulus: function() {
     const image_path = jsPsych.timelineVariable('image');
     const sound_path = jsPsych.timelineVariable('sound');
-    // ユーザ操作後に再生されるので Audio を直接使用
     const audio = new Audio(sound_path);
     audio.play();
     return `
@@ -623,5 +553,5 @@ const sound_recognition_block = {
 };
 timeline.push(sound_recognition_block);
 
-
+// --- 実験の実行 ---
 jsPsych.run(timeline);
