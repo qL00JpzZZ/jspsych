@@ -1,4 +1,4 @@
-// ファイルパス: netlify/functions/saveToDrive.js
+// ファイルパス: netlify/functions/saveToDrive.js または api/saveToDrive.js
 
 const { google } = require('googleapis');
 
@@ -21,25 +21,26 @@ exports.handler = async function (event) {
     const drive = google.drive({ version: 'v3', auth });
 
     const fileMetadata = {
-      // クライアントから指定されたファイル名を使用する
       name: experimentData.filename,
       parents: [process.env.GOOGLE_DRIVE_FOLDER_ID],
     };
+
     const media = {
       mimeType: 'text/csv',
-      // クライアントから送られてきたCSVデータを使用する
       body: experimentData.csv,
     };
 
-    const file = await drive.files.create({
+    await drive.files.create({
       resource: fileMetadata,
       media: media,
       fields: 'id',
+      // 【↓↓↓ この1行を追加してください ↓↓↓】
+      supportsAllDrives: true,
     });
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: 'Result saved successfully!', fileId: file.data.id }),
+      body: JSON.stringify({ message: 'Result saved successfully!' }),
     };
 
   } catch (error) {
