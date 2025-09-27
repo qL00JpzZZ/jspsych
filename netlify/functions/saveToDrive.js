@@ -1,4 +1,4 @@
-// ファイルパス: api/saveToDrive.js (Vercelの場合)
+// ファイルパス: netlify/functions/saveToDrive.js
 
 const { google } = require('googleapis');
 

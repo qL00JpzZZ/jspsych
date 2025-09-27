@@ -1,3 +1,5 @@
+// ファイルパス: js/my-experiment.js
+
 // -------------------- ヘルパー関数 --------------------
 // ファイル名に使えない文字を置換・削除する
 function sanitizeFileNamePart(s) {
@@ -14,8 +16,8 @@ function formatPercentFraction(correctCount, totalCount) {
 // -------------------- サーバー送信関数 --------------------
 async function saveCsvToServer(filename, csvText) {
   try {
-    // Vercelの場合のパス
-    const response = await fetch('/api/saveToDrive', {
+    // 【Netlify用のパス】
+    const response = await fetch('/.netlify/functions/saveToDrive', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ filename: filename, csv: csvText })
