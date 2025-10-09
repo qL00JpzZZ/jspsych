@@ -12,18 +12,19 @@
       padding: 0;
       background-color: #f3f3f3;
       font-family: Arial, Helvetica, sans-serif;
-    }
-    /* jsPsychのコンテナを画面中央に配置する設定 */
-    #jspsych-target {
+      /* bodyにFlexboxを適用 */
       display: flex;
       justify-content: center; /* 水平方向の中央揃え */
       align-items: center;    /* 垂直方向の中央揃え */
-      height: 100%;
-      width: 100%;
     }
-    /* 説明文などが長くなる場合に備え、最大幅を設定 */
+    /* jsPsychのコンテナ設定 */
+    #jspsych-target {
+      /* 幅は最大800pxに制限（長文の読みやすさのため） */
+      max-width: 800px;
+    }
+    /* jsPsychの刺激表示エリアのデフォルト設定 */
     .jspsych-html-keyboard-response-stimulus {
-        max-width: 800px;
+        width: 800px;
         text-align: left;
     }
   </style>
