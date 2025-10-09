@@ -5,8 +5,27 @@
   <title>実験ページ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body { font-family: Arial, Helvetica, sans-serif; background:#f3f3f3; padding:20px; }
-    #jspsych-target { max-width: 1000px; margin: auto; }
+    /* 画面全体を使い、コンテンツを中央に配置するための基本設定 */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background-color: #f3f3f3;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    /* jsPsychのコンテナを画面中央に配置する設定 */
+    #jspsych-target {
+      display: flex;
+      justify-content: center; /* 水平方向の中央揃え */
+      align-items: center;    /* 垂直方向の中央揃え */
+      height: 100%;
+      width: 100%;
+    }
+    /* 説明文などが長くなる場合に備え、最大幅を設定 */
+    .jspsych-html-keyboard-response-stimulus {
+        max-width: 800px;
+        text-align: left;
+    }
   </style>
 </head>
 <body>
