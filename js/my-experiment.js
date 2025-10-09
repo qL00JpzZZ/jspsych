@@ -31,6 +31,7 @@ async function saveCsvToServer(filename, csvText) {
     throw error;
   }
 }
+let timeline = [];
 
 // -------------------- jsPsychの初期化 --------------------
 let participantInitials = 'unknown';
