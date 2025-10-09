@@ -12,20 +12,19 @@
       padding: 0;
       background-color: #f3f3f3;
       font-family: Arial, Helvetica, sans-serif;
-      /* 文字サイズを少し大きくする */
-      font-size: 18px;
-    }
-    /* jsPsychのコンテナを画面中央に配置する設定 */
-    #jspsych-target {
+      /* bodyにFlexboxを適用 */
       display: flex;
       justify-content: center; /* 水平方向の中央揃え */
       align-items: center;    /* 垂直方向の中央揃え */
-      height: 100%;
-      width: 100%;
     }
-    /* 説明文などが長くなる場合に備え、最大幅を広げる */
+    /* jsPsychのコンテナ設定 */
+    #jspsych-target {
+      /* 幅は最大900pxに制限 */
+      max-width: 900px;
+    }
+    /* jsPsychの刺激表示エリアのデフォルト設定 */
     .jspsych-html-keyboard-response-stimulus {
-        max-width: 900px;
+        width: 900px; /* コンテナの幅と合わせる */
         text-align: left;
     }
   </style>
@@ -39,6 +38,6 @@
   <script src="https://unpkg.com/@jspsych/plugin-survey-text@1.1.3"></script>
   <link rel="stylesheet" href="https://unpkg.com/jspsych@7.3.4/css/jspsych.css" />
 
-  <script src="js/my-experiment.js"></script>
+  <script src="my-experiment.js"></script>
 </body>
 </html>
