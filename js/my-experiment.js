@@ -31,7 +31,6 @@ async function saveCsvToServer(filename, csvText) {
     throw error;
   }
 }
-let timeline = [];
 
 // -------------------- jsPsychの初期化 --------------------
 let participantInitials = 'unknown';
@@ -53,7 +52,7 @@ const jsPsych = initJsPsych({
   }
 });
 
-// -------------------- イニシャル入力試行 --------------------
+// -------------------- 各種試行の定義 --------------------
 const initials_trial = {
   type: jsPsychSurveyText,
   questions: [
@@ -66,7 +65,6 @@ const initials_trial = {
   }
 };
 
-// -------------------- 説明文の定義 --------------------
 const instructions_start = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: `
@@ -130,7 +128,7 @@ const instructions_test_start = {
     post_trial_gap: 500
 };
 
-// --- 画像ファイルリスト ---
+// --- 画像・音声ファイルリスト ---
 const raw_image_files = {
   INDOOR: {
     grocerystore: [
@@ -147,7 +145,7 @@ const raw_image_files = {
     ],
     gym: [
       'csu6.jpg', 'gym13.jpg', 'bg-gym2.jpg', 'SALLE3.jpg', 'room399.jpg', 'gym09.jpg', 'fitness_center3.jpg', 'Image_Grande72.jpg', 'salle-cardio-grand.jpg', 'herade_inside.jpg', 'salle_1.jpg', 'ucc_gym_photos_bg.jpg', 'montreal_octo 030.jpg', 'fieldhouse-weightroom.jpg', 'gym_b4.jpg', 'guyane_muscul.jpg', 'Gym-Equipment.jpg', 'gym04.jpg', 'gym03.jpg', 'MSAC_Gym_-_20061515.jpg', 'room424.jpg', 'salle_9.jpg', 'gym06.jpg', 'int838.jpg', 'Gym432.jpg', 'gym_b.jpg', 'url.jpg', 'gym65.jpg', 'saledemuscu11.jpg', 'int525.jpg', 'uploads-images-photos_images-fullsize-gym.jpg', 'hotel-megeve-11.jpg', 'Gym05.jpg', 'Proflex gym lagos nigeria 4.jpg', 'junglegym-60.jpg', 'Photo-008.jpg', 'media40037.jpg', 'gym07.jpg', 'gym3.jpg', 'refurbished-gym-equipment.jpg', 'southglade_gym-2.jpg', 'HO-00-01-5186-23_l.jpg', 'necker_salle_de_gym_reference.jpg', 'Gym2_000.jpg', 'web-cardio-theatre-gym.jpg', 'biosite-gym.jpg', 'p1a.jpg', 'media39989.jpg', 'SalleMuscu.jpg', 'gym_left.jpg', 'gym45.jpg', 'gym08.jpg', 'gym14.jpg', 'gym2.jpg', 'room398.jpg', 'HO-00-02-5304-28A_l.jpg', 'GymInt1.jpg', 'gym001.jpg',
-    ]
+    ],
   },
   OUTDOOR: {
     castle: [
@@ -160,7 +158,7 @@ const raw_image_files = {
       'FreeFoto_forest_3_19.jpg', 'FAN1006576_P.jpg', 'CBP1014811_P.jpg', 'forest_01_01_ask.jpg', 'cdMC349.jpg', 'forest24.jpg', 'forest25.jpg', 'FreeFoto_forest_9_7.jpg', 'AYP0783202_P-1.jpg', 'forest_11_20_yahoo.jpg', 'DVP4907648_P.jpg', 'forest_02_11_altavista.jpg', 'forest_01_01_google.jpg', 'forest05.jpg', 'CYP0800679_P.jpg', 'forest_09_05_askl.jpg', 'forest_11_06_askl.jpg', 'AGP0027965_P.jpg', 'DVP4967677_P.jpg', '36021.jpg', 'FreeFoto_forest_3_44.jpg', 'forest_31_02_altavista.jpg', 'CYP0801743_P.jpg', 'cdMC413.jpg', 'DVP4966497_P.jpg', 'DVP4962393_P.jpg', '08Trees.jpg', 'forest_18_04_askl.jpg', 'forest_11_02_altavista.jpg', 'FreeFoto_forest_11_32.jpg', 'forest_36_05_altavista.jpg', 'FreeFoto_forest_3_26.jpg', 'bambouseraie_12_10_altavista.jpg', 'CCP0014018_P-1.jpg', 'nat234.jpg', 'forest10.jpg', 'forest20.jpg', 'forest_01_02_ask.jpg', 'FreeFoto_forest_3_32.jpg', 'forest_01_02_altavista.jpg', 'forest_30_02_yahoo.jpg', 'FreeFoto_forest_2_48.jpg', 'FreeFoto_national park_10_1.jpg', '36032.jpg', 'AYP0783229_P.jpg', 'forest_32_08_altavista.jpg', 'cdMC398.jpg', 'FreeFoto_forest_3_20.jpg', 'FreeFoto_forest_11_36.jpg', 'FAN2016942_P.jpg', 'forest_17_01_askl.jpg', 'FreeFoto_forest_2_47.jpg', 'forest_05_06_askl.jpg', 'FreeFoto_forest_3_43.jpg', '482063.jpg', 'cdMC617.jpg', 'bambouseraie_02_05_altavista.jpg', 'forest13.jpg', 'forest_14_16_yahoo.jpg', 'nat408.jpg',
     ],
     desert: [
-      'des22.jpg', 'NA006526.jpg', 'Desert_de_Gobi.jpg', 'beach_138_10_flickr.jpg', 'des14.jpg', 'AA019096.jpg', 'land616.jpg', 'NA004783.jpg', 'land701.jpg', 'bambouseraie_42_12_google.jpg', 'land514.jpg', 'NA001302.jpg', 'NA008867.jpg', 'beach_165_20_flickr.jpg', 'des15.jpg', 'NA006122.jpg', 'beach_40_21_flickr.jpg', 'MWP0020668_P.jpg', '611sahara.jpg', 'des13.jpg', 'beach_02_10_yahoo.jpg', 'beach_115_11_flickr.jpg', 'NA000915.jpg', 'NA004090.jpg', 'AA005954.jpg', 'cdmc795.jpg', 'beach_34_01_flickr.jpg', 'G02 Gobi Desert Sand Dunes.jpg', 'forest_34_08_altavista.jpg', 'des17.jpg', 'beach_26_19_altavista.jpg', 'BXP0035856_P.jpg', 'des18.jpg', 'land564.jpg', '800px-Towering_Sand_Dunes.jpg', '255055.jpg', 'AIP0005723_P.jpg', 'NA006111.jpg', '034medanos.jpg', 'land526.jpg', 'DVP4967429_P.jpg', 'NA006361.jpg', 'land656.jpg', 'BXP0035855_P.jpg', '50092.jpg', 'land645.jpg', 'beach_91_12_flickr.jpg', 'NA007446.jpg', 'natu539.jpg', 'mountain_10_04_askl.jpg', '480075.jpg', 'AA005940.jpg', 'Lone Palm, Sahara Desert-1.jpg', 'natu89.jpg', 'land658.jpg', 'AA020480.jpg', 'n251011.jpg', 'land657.jpg', 'des16.jpg', 'des21.jpg',
+      'des22.jpg', 'NA006526.jpg', 'Desert_de_Gobi.jpg', 'beach_138_10_flickr.jpg', 'des14.jpg', 'AA019096.jpg', 'land616.jpg', 'NA004783.jpg', 'land701.jpg', 'bambouseraie_42_12_google.jpg', 'land514.jpg', 'NA001302.jpg', 'NA008867.jpg', 'beach_165_20_flickr.jpg', 'des15.jpg', 'NA006122.jpg', 'beach_40_21_flickr.jpg', 'MWP0020668_P.jpg', '611sahara.jpg', 'des13.jpg', 'beach_02_10_yahoo.jpg', 'beach_115_11_flickr.jpg', 'NA000915.jpg', 'NA004090.jpg', 'AA005954.jpg', 'cdmc795.jpg', 'beach_34_01_flickr.jpg', 'G02 Gobi Desert Sand Dunes.jpg', 'forest_34_08_altavista.jpg', 'des17.jpg', 'beach_26_19_altavista.jpg', 'BXP0035856_P.jpg', 'des18.jpg', 'land564.jpg', '800px-Towering_Sand_Dunes.jpg', '255055.jpg', 'AIP0005723_P.jpg', 'NA006111.jpg', '034medanos.jpg', 'land526.jpg', 'DVP4967429_P.jpg', 'NA006361.jpg', 'land656.jpg', 'BXP0035855_P.jpg', '50092.jpg', 'land645.jpg', 'beach_91_12_flickr.jpg', 'NA007446.jpg', 'natu539.jpg', 'mountain_10_04_askl.jpg', '482075.jpg', 'AA005940.jpg', 'Lone Palm, Sahara Desert-1.jpg', 'natu89.jpg', 'land658.jpg', 'AA020480.jpg', 'n251011.jpg', 'land657.jpg', 'des16.jpg', 'des21.jpg',
     ],
     mountain: [
       'FreeFoto_mountain_1_31.jpg', 'mountain05.jpg', 'mountain62.jpg', 'FreeFoto_mountain_1_10.jpg', 'FreeFoto_mountain_4_8.jpg', 'land16.jpg', 'FreeFoto_mountain_4_28.jpg', 'cdmc181.jpg', 'FreeFoto_mountain_4_21.jpg', 'FreeFoto_mountain_4_18.jpg', 'land680.jpg', 'FreeFoto_mountain_1_44.jpg', 'mountain86.jpg', 'FreeFoto_mountain_4_45.jpg', 'mountain77.jpg', 'land18.jpg', 'land387.jpg', 'mountain06.jpg', 'CMP0003645_P.jpg', 'BXP0029825_P.jpg', 'land145.jpg', 'land143.jpg', 'mountain08.jpg', 'DVP4969295_P.jpg', 'mountain59.jpg', 'DVP4967994_P.jpg', 'mountain_03_02_askl.jpg', 'FreeFoto_mountain_1_15.jpg', 'mountain64.jpg', 'mountain93.jpg', 'mountain94.jpg', 'FreeFoto_mountain_4_47.jpg', 'FreeFoto_mountain_6_42.jpg', 'land188.jpg', 'land130.jpg', 'mountain76.jpg', 'mountain52.jpg', 'FreeFoto_mountain_1_2.jpg', 'FreeFoto_mountain_3_34.jpg', 'mountain50.jpg', 'FreeFoto_mountain_4_36.jpg', 'land179.jpg', 'mountain09.jpg', 'FreeFoto_mountain_1_5.jpg', 'mountain80.jpg', 'mountain54.jpg', 'FreeFoto_mountain_1_19.jpg', 'land210.jpg', 'FreeFoto_mountain_7_1.jpg', 'FreeFoto_mountain_3_29.jpg', 'FreeFoto_mountain_8_5.jpg', 'FreeFoto_mountain_1_36.jpg', 'FAN2009894_P.jpg', 'crique_13_08_google.jpg', 'land161.jpg', 'n44002.jpg', 'mountain19.jpg', 'land165.jpg', 'land132.jpg',
@@ -186,8 +184,6 @@ const all_sounds = raw_sound_files.map(filename => `sounds/${filename}`);
 // =========================================================================
 // 刺激生成ロジック
 // =========================================================================
-
-// --- 音声刺激の準備 ---
 const NUM_AB_PAIRS = 4;
 const NUM_X_TRIALS = 4;
 let shuffled_sounds = jsPsych.randomization.shuffle(all_sounds);
@@ -198,8 +194,6 @@ const learned_sound_pairs = [];
 for (let i = 0; i < NUM_AB_PAIRS; i++) {
   learned_sound_pairs.push([sounds_for_A[i], sounds_for_B[i]]);
 }
-
-// --- 学習フェーズの刺激を生成 (120試行) ---
 const NUM_IMAGES_PER_CATEGORY = 12;
 let learning_images = [];
 for (const main_cat in image_files) {
@@ -209,7 +203,6 @@ for (const main_cat in image_files) {
     }
 }
 learning_images = jsPsych.randomization.shuffle(learning_images);
-
 let base_trial_blocks = [];
 for (let i = 0; i < NUM_AB_PAIRS; i++) {
   base_trial_blocks.push({ type: 'AB_PAIR', sound_A: sounds_for_A[i], sound_B: sounds_for_B[i] });
@@ -217,13 +210,11 @@ for (let i = 0; i < NUM_AB_PAIRS; i++) {
 for (let i = 0; i < NUM_X_TRIALS; i++) {
   base_trial_blocks.push({ type: 'X_TRIAL', sound_X: sounds_for_X[i] });
 }
-
 let repeated_blocks = [];
 for(let i = 0; i < 10; i++){
     repeated_blocks.push(...base_trial_blocks);
 }
 let shuffled_blocks = jsPsych.randomization.shuffle(repeated_blocks);
-
 let image_counter = 0;
 const learning_stimuli = [];
 shuffled_blocks.forEach(block => {
@@ -234,8 +225,6 @@ shuffled_blocks.forEach(block => {
     learning_stimuli.push({ image: learning_images[image_counter++], sound: block.sound_X, sound_pattern: 'パターンX' });
   }
 });
-
-// --- テストフェーズの刺激を生成 ---
 const all_image_paths_flat = Object.values(image_files.indoor).concat(Object.values(image_files.outdoor)).flat();
 const unused_images = all_image_paths_flat.filter(img => !learning_images.includes(img));
 const new_images_for_test = jsPsych.randomization.sampleWithoutReplacement(unused_images, learning_images.length);
@@ -262,7 +251,10 @@ for (let i = 0; i < NUM_AB_PAIRS; i++) {
   });
 }
 
-// -------------------- タイムラインの構築 --------------------
+// =========================================================================
+// タイムラインの構築と実行
+// =========================================================================
+
 const all_image_paths_for_preload = learning_images.concat(new_images_for_test);
 const all_sound_paths_for_preload = shuffled_sounds;
 const preload_trial = {
@@ -271,7 +263,6 @@ const preload_trial = {
   audio: all_sound_paths_for_preload,
   message: '実験の準備をしています。しばらくお待ちください...'
 };
-timeline.push(preload_trial);
 
 const learning_procedure = {
   type: jsPsychHtmlKeyboardResponse,
@@ -314,10 +305,6 @@ const learning_block_2 = {
     timeline_variables: learning_stimuli_part2,
     randomize_order: false
 };
-timeline.push(learning_block_1);
-timeline.push(break_trial);
-timeline.push(learning_block_2);
-timeline.push(instructions_test_start);
 
 const image_recognition_procedure = {
   type: jsPsychHtmlKeyboardResponse,
@@ -345,7 +332,6 @@ const image_recognition_block = {
   timeline_variables: image_recognition_stimuli,
   randomize_order: true
 };
-timeline.push(image_recognition_block);
 
 const instructions_sound_2afc = {
     type: jsPsychHtmlKeyboardResponse,
@@ -355,7 +341,6 @@ const instructions_sound_2afc = {
     `,
     post_trial_gap: 500
 };
-timeline.push(instructions_sound_2afc);
 
 const sound_2afc_playback_trial = {
     type: jsPsychHtmlKeyboardResponse,
@@ -366,27 +351,21 @@ const sound_2afc_playback_trial = {
         const old_pair = jsPsych.timelineVariable('old_pair', true);
         const new_pair = jsPsych.timelineVariable('new_pair', true);
         const presentation_order = jsPsych.timelineVariable('presentation_order', true);
-
         const first_pair_sounds = presentation_order[0] === 'old' ? old_pair : new_pair;
         const second_pair_sounds = presentation_order[1] === 'old' ? old_pair : new_pair;
-
         const audio1 = new Audio(first_pair_sounds[0]);
         const audio2 = new Audio(first_pair_sounds[1]);
         const audio3 = new Audio(second_pair_sounds[0]);
         const audio4 = new Audio(second_pair_sounds[1]);
-        
         const display_element = jsPsych.getDisplayElement();
         const stimulus_div = display_element.querySelector('#jspsych-html-keyboard-response-stimulus');
-
         const play_second_pair = () => {
             if(stimulus_div) stimulus_div.innerHTML = '<p style="font-size: 1.5em;">2組目...</p>';
             setTimeout(() => { audio3.play(); }, 700);
         };
-
         audio1.addEventListener('ended', () => setTimeout(() => audio2.play(), 100));
         audio2.addEventListener('ended', play_second_pair);
         audio3.addEventListener('ended', () => setTimeout(() => audio4.play(), 100));
-        
         if(stimulus_div) stimulus_div.innerHTML = '<p style="font-size: 1.5em;">1組目...</p>';
         audio1.play();
     }
@@ -413,6 +392,18 @@ const sound_recognition_block = {
   timeline: [sound_2afc_playback_trial, sound_2afc_response_trial],
   timeline_variables: sound_2afc_stimuli
 };
+
+// 【重要】timelineへの追加と実行は、すべての試行定義の後に行います
+const timeline = [];
+timeline.push(initials_trial);
+timeline.push(instructions_start);
+timeline.push(preload_trial);
+timeline.push(learning_block_1);
+timeline.push(break_trial);
+timeline.push(learning_block_2);
+timeline.push(instructions_test_start);
+timeline.push(image_recognition_block);
+timeline.push(instructions_sound_2afc);
 timeline.push(sound_recognition_block);
 
 // --- 実験の実行 ---
