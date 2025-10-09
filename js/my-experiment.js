@@ -145,8 +145,6 @@ const raw_sound_files = [
   'hu.wav', 'ri.wav', 'go.wav', 'ta.wav', 'no.wav', 'zu.wav', 'wa.wav', 'ku.wav', 'mu.wav', 'na.wav', 'zi.wav', 'do.wav', 'ze.wav', 'pe.wav', 'za.wav', 'pu.wav', 'se.wav', 'ko.wav', 'ga.wav', 'zo.wav', 'gu.wav', 'me.wav', 'po.wav', 'te.wav', 'bi.wav', 're.wav', 'ya.wav', 'ba.wav', 'da.wav', 'ra.wav', 'mo.wav', 'bo.wav', 'so.wav', 'ha.wav', 'hi.wav', 'si.wav', 'ru.wav', 'sa.wav', 'nu.wav', 'ke.wav', 'mi.wav', 'gi.wav', 'su.wav', 'de.wav', 'ro.wav', 'to.wav', 'bu.wav', 'ma.wav', 'pa.wav', 'ki.wav', 'ti.wav', 'pi.wav', 'yu.wav', 'ho.wav', 'he.wav', 'ni.wav', 'be.wav', 'tu.wav',
 ];
 
-// (以下、コードの残りの部分は前の回答と同じです)
-// ...
 // --- ファイルパスの自動生成 ---
 const image_files = { indoor: {}, outdoor: {} };
 for (const main_cat_key in raw_image_files) {
@@ -162,8 +160,6 @@ const all_sounds = raw_sound_files.map(filename => `sounds/${filename}`);
 // =========================================================================
 // 刺激生成ロジック
 // =========================================================================
-
-// --- 音声刺激の準備 ---
 const NUM_AB_PAIRS = 4;
 const NUM_X_TRIALS = 4;
 let shuffled_sounds = jsPsych.randomization.shuffle(all_sounds);
@@ -174,8 +170,6 @@ const learned_sound_pairs = [];
 for (let i = 0; i < NUM_AB_PAIRS; i++) {
   learned_sound_pairs.push([sounds_for_A[i], sounds_for_B[i]]);
 }
-
-// --- 学習フェーズの刺激を生成 (120試行) ---
 const NUM_IMAGES_PER_CATEGORY = 12;
 let learning_images = [];
 for (const main_cat in image_files) {
@@ -185,7 +179,6 @@ for (const main_cat in image_files) {
     }
 }
 learning_images = jsPsych.randomization.shuffle(learning_images);
-
 let base_trial_blocks = [];
 for (let i = 0; i < NUM_AB_PAIRS; i++) {
   base_trial_blocks.push({ type: 'AB_PAIR', sound_A: sounds_for_A[i], sound_B: sounds_for_B[i] });
@@ -193,13 +186,11 @@ for (let i = 0; i < NUM_AB_PAIRS; i++) {
 for (let i = 0; i < NUM_X_TRIALS; i++) {
   base_trial_blocks.push({ type: 'X_TRIAL', sound_X: sounds_for_X[i] });
 }
-
 let repeated_blocks = [];
 for(let i = 0; i < 10; i++){
     repeated_blocks.push(...base_trial_blocks);
 }
 let shuffled_blocks = jsPsych.randomization.shuffle(repeated_blocks);
-
 let image_counter = 0;
 const learning_stimuli = [];
 shuffled_blocks.forEach(block => {
@@ -210,11 +201,9 @@ shuffled_blocks.forEach(block => {
     learning_stimuli.push({ image: learning_images[image_counter++], sound: block.sound_X, sound_pattern: 'パターンX' });
   }
 });
-
-// --- テストフェーズの刺激を生成 ---
 const all_image_paths_flat = Object.values(image_files.indoor).concat(Object.values(image_files.outdoor)).flat();
 const unused_images = all_image_paths_flat.filter(img => !learning_images.includes(img));
-const new_images_for_test = jsPsych.randomization.sampleWithoutReplacement(unused_images, learning_images.length);
+const new_images_for_test = jsPsych.randomization.sampleWithoutReplacement(unused_images, 30);
 const image_recognition_stimuli = [
   ...learning_images.map(img => ({ image: img, status: 'old', correct_response: 'j' })),
   ...new_images_for_test.map(img => ({ image: img, status: 'new', correct_response: 'k' }))
@@ -228,7 +217,7 @@ for (let i = 0; i < NUM_AB_PAIRS; i++) {
 const sound_2afc_stimuli = [];
 const shuffled_old_pairs = jsPsych.randomization.shuffle(learned_sound_pairs);
 const shuffled_new_pairs = jsPsych.randomization.shuffle(new_sound_pairs);
-for (let i = 0; i < NUM_AB_PAIRS; i++) {
+for (let i = 0; i < 3; i++) {
   const presentation_order = jsPsych.randomization.shuffle(['old', 'new']);
   sound_2afc_stimuli.push({
     old_pair: shuffled_old_pairs[i],
@@ -326,6 +315,7 @@ const instructions_sound_2afc = {
         <p><strong>【音声ペアテスト】</strong></p>
         <p>準備ができたら、何かキーを押して開始してください。</p>
     `,
+    choices: [' '],
     post_trial_gap: 500
 };
 
@@ -364,6 +354,23 @@ const sound_2afc_response_trial = {
     `,
     choices: ['j', 'k'],
     prompt: `<p style="font-size: 1.2em;"><b>J</b> = 1組目 / <b>K</b> = 2組目</p>`,
+    on_load: function() {
+        jsPsych.pluginAPI.cancelAllKeyboardResponses();
+        setTimeout(() => {
+            jsPsych.pluginAPI.getKeyboardResponse({
+                callback_function: (info) => {
+                    jsPsych.finishTrial({
+                        rt: info.rt,
+                        response: info.key
+                    });
+                },
+                valid_responses: ['j', 'k'],
+                rt_method: 'performance',
+                persist: false,
+                allow_held_key: false
+            });
+        }, 2000);
+    },
     data: {
         old_pair: jsPsych.timelineVariable('old_pair'),
         new_pair: jsPsych.timelineVariable('new_pair'),
@@ -380,7 +387,6 @@ const sound_recognition_block = {
   timeline_variables: sound_2afc_stimuli
 };
 
-// 【重要】すべての試行定義が終わった後で、timelineを定義・構築します
 const timeline = [];
 timeline.push(initials_trial);
 timeline.push(instructions_start);
