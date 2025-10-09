@@ -81,9 +81,10 @@ const instructions_start = {
             </ol>
             <p><strong>【所要時間と注意点】</strong></p>
             <p>実験全体の所要時間は約15〜20分です。実験中は、静かで集中できる環境でご参加ください。また、PCのスピーカーまたはイヤホンから音声が聞こえる状態にしてください。</p>
-            <p>準備ができましたら、何かキーを押して最初の課題（学習フェーズ）を開始してください。</p>
+            <p>準備ができましたら、<strong>スペースキー</strong>を押して最初の課題（学習フェーズ）を開始してください。</p>
         </div>
     `,
+    choices: [' '],
     post_trial_gap: 500
 };
 const break_trial = {
@@ -116,9 +117,10 @@ const instructions_test_start = {
             <p><strong>・2組目が学習したペアの場合：「K」キー</strong></p>
             <br>
             <p>どちらのテストも、できるだけ速く、正確に回答するよう心がけてください。</p>
-            <p>準備ができましたら、何かキーを押して最初のテスト（画像再認テスト）を開始してください。</p>
+            <p>準備ができましたら、<strong>スペースキー</strong>を押して最初のテスト（画像再認テスト）を開始してください。</p>
         </div>
     `,
+    choices: [' '],
     post_trial_gap: 500
 };
 
@@ -178,6 +180,8 @@ const all_sounds = raw_sound_files.map(filename => `sounds/${filename}`);
 // =========================================================================
 // 刺激生成ロジック
 // =========================================================================
+
+// --- 音声刺激の準備 ---
 const NUM_AB_PAIRS = 4;
 const NUM_X_TRIALS = 4;
 let shuffled_sounds = jsPsych.randomization.shuffle(all_sounds);
@@ -188,6 +192,8 @@ const learned_sound_pairs = [];
 for (let i = 0; i < NUM_AB_PAIRS; i++) {
   learned_sound_pairs.push([sounds_for_A[i], sounds_for_B[i]]);
 }
+
+// --- 学習フェーズの刺激を生成 (120試行) ---
 const NUM_IMAGES_PER_CATEGORY = 12;
 let learning_images = [];
 for (const main_cat in image_files) {
@@ -197,6 +203,7 @@ for (const main_cat in image_files) {
     }
 }
 learning_images = jsPsych.randomization.shuffle(learning_images);
+
 let base_trial_blocks = [];
 for (let i = 0; i < NUM_AB_PAIRS; i++) {
   base_trial_blocks.push({ type: 'AB_PAIR', sound_A: sounds_for_A[i], sound_B: sounds_for_B[i] });
@@ -204,11 +211,13 @@ for (let i = 0; i < NUM_AB_PAIRS; i++) {
 for (let i = 0; i < NUM_X_TRIALS; i++) {
   base_trial_blocks.push({ type: 'X_TRIAL', sound_X: sounds_for_X[i] });
 }
+
 let repeated_blocks = [];
 for(let i = 0; i < 10; i++){
     repeated_blocks.push(...base_trial_blocks);
 }
 let shuffled_blocks = jsPsych.randomization.shuffle(repeated_blocks);
+
 let image_counter = 0;
 const learning_stimuli = [];
 shuffled_blocks.forEach(block => {
@@ -219,6 +228,8 @@ shuffled_blocks.forEach(block => {
     learning_stimuli.push({ image: learning_images[image_counter++], sound: block.sound_X, sound_pattern: 'パターンX' });
   }
 });
+
+// --- テストフェーズの刺激を生成 ---
 const all_image_paths_flat = Object.values(image_files.indoor).concat(Object.values(image_files.outdoor)).flat();
 const unused_images = all_image_paths_flat.filter(img => !learning_images.includes(img));
 const new_images_for_test = jsPsych.randomization.sampleWithoutReplacement(unused_images, learning_images.length);
@@ -387,6 +398,7 @@ const sound_recognition_block = {
   timeline_variables: sound_2afc_stimuli
 };
 
+// 【重要】すべての試行定義が終わった後で、timelineを定義・構築します
 const timeline = [];
 timeline.push(initials_trial);
 timeline.push(instructions_start);
