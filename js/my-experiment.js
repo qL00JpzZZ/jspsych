@@ -32,13 +32,34 @@ let participantInitials = 'unknown';
 const jsPsych = initJsPsych({
   on_finish: async function() {
     jsPsych.getDisplayElement().innerHTML = '<p style="font-size: 20px;">結果を保存しています。しばらくお待ちください...</p>';
-    
+
+    // 1. まず正答率を計算する
+    const image_test_results = jsPsych.data.get().filter({ task_phase: 'image_recognition' });
+    const sound_test_results = jsPsych.data.get().filter({ task_phase: 'sound_recognition' });
+
+    const image_total = image_test_results.count();
+    const image_correct = image_test_results.filter({ correct: true }).count();
+    const image_percent = `${(image_correct / image_total * 100).toFixed(1)}%`;
+
+    const sound_total = sound_test_results.count();
+    const sound_correct = sound_test_results.filter({ correct: true }).count();
+    const sound_percent = `${(sound_correct / sound_total * 100).toFixed(1)}%`;
+
+    // 2. jsPsychの生データ（CSV形式）を取得
     let csvData = jsPsych.data.get().csv();
+
+    // 3. 生データの末尾に、計算した正答率のサマリーを追加
+    const summaryHeader = "\n\n--- Summary ---";
+    const summaryData = `\nImage Recognition Accuracy,${image_percent}\nSound Pair Accuracy,${sound_percent}`;
+    const csvToSave = csvData + summaryHeader + summaryData;
+
+    // 4. ファイル名を生成
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `${participantInitials}_${timestamp}.csv`;
 
     try {
-      await saveCsvToServer(filename, csvData);
+      // 5. サマリー付きのデータをサーバーに送信
+      await saveCsvToServer(filename, csvToSave);
       jsPsych.getDisplayElement().innerHTML = '<div style="text-align: center; max-width: 800px; font-size: 20px;"><h2>実験終了</h2><p>結果は正常に保存されました。</p><p>ご協力いただき、誠にありがとうございました。このウィンドウを閉じて実験を終了してください。</p></div>';
     } catch (err) {
       jsPsych.getDisplayElement().innerHTML = '<div style="text-align: center; max-width: 800px; font-size: 20px;"><h2>エラー</h2><p>エラーが発生し、結果を保存できませんでした。</p><p>お手数ですが、実験実施者にお知らせください。</p></div>';
@@ -387,6 +408,7 @@ const sound_recognition_block = {
   timeline_variables: sound_2afc_stimuli
 };
 
+// 【重要】すべての試行定義が終わった後で、timelineを定義・構築します
 const timeline = [];
 timeline.push(initials_trial);
 timeline.push(instructions_start);
