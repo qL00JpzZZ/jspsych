@@ -8,19 +8,17 @@ function sanitizeFileNamePart(s) {
 function formatPercentFraction(correctCount, totalCount) {
   if (totalCount === 0) return 'N/A';
   const percent = (correctCount / totalCount) * 100;
-  return `${percent.toFixed(1)}%`; // 小数点以下1桁に統一
+  return `${percent.toFixed(1)}%`;
 }
 
 // -------------------- サーバー送信関数 --------------------
 async function saveCsvToServer(filename, csvText) {
   try {
-    // Netlify用のパス
     const response = await fetch('/.netlify/functions/saveToDrive', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ filename: filename, csv: csvText })
     });
-
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(`Server error: ${response.status} - ${errorData.error}`);
@@ -28,50 +26,29 @@ async function saveCsvToServer(filename, csvText) {
     const result = await response.json();
     console.log('サーバーからの応答:', result);
     return result;
-
   } catch (error) {
     console.error('結果の保存に失敗しました:', error);
     throw error;
   }
 }
 
-// -------------------- jsPsychの初期化と実験フロー --------------------
-let participantInitials = 'unknown'; // グローバル変数としてイニシャルを保持
+// -------------------- jsPsychの初期化 --------------------
+let participantInitials = 'unknown';
 
 const jsPsych = initJsPsych({
   on_finish: async function() {
-    jsPsych.getDisplayElement().innerHTML = '<p>結果を保存しています。しばらくお待ちください...</p>';
-
-    // 各試行で記録した`data.correct`を使って集計
-    const image_test_results = jsPsych.data.get().filter({ task_phase: 'image_recognition' });
-    const sound_test_results = jsPsych.data.get().filter({ task_phase: 'sound_recognition' });
-
-    const image_total = image_test_results.count();
-    const image_correct = image_test_results.filter({ correct: true }).count();
-    const image_percent = formatPercentFraction(image_correct, image_total);
-
-    const sound_total = sound_test_results.count();
-    const sound_correct = sound_test_results.filter({ correct: true }).count();
-    const sound_percent = formatPercentFraction(sound_correct, sound_total);
-
-    // CSV生成と保存
+    jsPsych.getDisplayElement().innerHTML = '<p style="font-size: 20px;">結果を保存しています。しばらくお待ちください...</p>';
+    
     let csvData = jsPsych.data.get().csv();
-    const summaryHeader = "\n--- Summary ---";
-    const summaryData = `Image Recognition Accuracy,${image_percent}\nSound Pair Accuracy,${sound_percent}`;
-    const csvToSave = csvData + "\n" + summaryHeader + "\n" + summaryData;
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `${participantInitials}_${timestamp}.csv`;
 
     try {
-      await saveCsvToServer(filename, csvToSave);
-      console.log('保存成功');
+      await saveCsvToServer(filename, csvData);
+      jsPsych.getDisplayElement().innerHTML = '<div style="text-align: center; max-width: 800px; font-size: 20px;"><h2>実験終了</h2><p>結果は正常に保存されました。</p><p>ご協力いただき、誠にありがとうございました。このウィンドウを閉じて実験を終了してください。</p></div>';
     } catch (err) {
-      console.error('サーバーへの保存中にエラーが発生しました:', err);
-      alert('結果の保存中にエラーが発生しました。詳細は開発者コンソールを確認してください。');
+      jsPsych.getDisplayElement().innerHTML = '<div style="text-align: center; max-width: 800px; font-size: 20px;"><h2>エラー</h2><p>エラーが発生し、結果を保存できませんでした。</p><p>お手数ですが、実験実施者にお知らせください。</p></div>';
     }
-
-    // 最終結果表示
-    jsPsych.getDisplayElement().innerHTML = '<div style="text-align: center;"><p>結果は正常に保存されました。</p><p>ご協力ありがとうございました。このウィンドウを閉じて実験を終了してください。</p></div>';
   }
 });
 
@@ -104,13 +81,13 @@ const instructions_start = {
                 <strong>・屋内画像の場合：「J」キー</strong><br>
                 <strong>・屋外画像の場合：「K」キー</strong><br>
                 <br>
-                このフェーズでは、合計12枚の画像と音声のペアが提示されます。画像のカテゴリ判断に集中してください。</li>
+                このフェーズでは、合計120枚の画像と音声のペアが提示されます。画像のカテゴリ判断に集中してください。</li>
                 <br>
                 <li><strong>テストフェーズ</strong><br>
                 学習フェーズで記憶した内容に関するテストを行います。テストは「画像再認テスト」と「音声ペア再認テスト」の2種類です。詳細は各テストの直前に説明します。</li>
             </ol>
             <p><strong>【所要時間と注意点】</strong></p>
-            <p>実験全体の所要時間は約5分です。実験中は、静かで集中できる環境でご参加ください。また、PCのスピーカーまたはイヤホンから音声が聞こえる状態にしてください。</p>
+            <p>実験全体の所要時間は約15〜20分です。実験中は、静かで集中できる環境でご参加ください。また、PCのスピーカーまたはイヤホンから音声が聞こえる状態にしてください。</p>
             <p>準備ができましたら、何かキーを押して最初の課題（学習フェーズ）を開始してください。</p>
         </div>
     `,
@@ -119,7 +96,7 @@ const instructions_start = {
 const break_trial = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: `
-        <div style="max-width: 800px; text-align: left; line-height: 1.6;">
+        <div style="max-width: 800px; text-align: center; line-height: 1.6;">
             <p>ここで一度休憩を取ります。</p>
             <p>学習フェーズはこれで半分終了です。</p>
             <p>準備ができましたら、<strong>スペースキー</strong>を押して後半を開始してください。</p>
@@ -151,11 +128,6 @@ const instructions_test_start = {
     `,
     post_trial_gap: 500
 };
-
-// -------------------- 実験タイムラインの定義 --------------------
-const timeline = [];
-timeline.push(initials_trial);
-timeline.push(instructions_start);
 
 // --- 画像ファイルリスト ---
 const raw_image_files = {
@@ -198,6 +170,7 @@ const raw_sound_files = [
   'hu.wav', 'ri.wav', 'go.wav', 'ta.wav', 'no.wav', 'zu.wav', 'wa.wav', 'ku.wav', 'mu.wav', 'na.wav', 'zi.wav', 'do.wav', 'ze.wav', 'pe.wav', 'za.wav', 'pu.wav', 'se.wav', 'ko.wav', 'ga.wav', 'zo.wav', 'gu.wav', 'me.wav', 'po.wav', 'te.wav', 'bi.wav', 're.wav', 'ya.wav', 'ba.wav', 'da.wav', 'ra.wav', 'mo.wav', 'bo.wav', 'so.wav', 'ha.wav', 'hi.wav', 'si.wav', 'ru.wav', 'sa.wav', 'nu.wav', 'ke.wav', 'mi.wav', 'gi.wav', 'su.wav', 'de.wav', 'ro.wav', 'to.wav', 'bu.wav', 'ma.wav', 'pa.wav', 'ki.wav', 'ti.wav', 'pi.wav', 'yu.wav', 'ho.wav', 'he.wav', 'ni.wav', 'be.wav', 'tu.wav'
 ];
 
+// --- ファイルパスの自動生成 ---
 const image_files = { indoor: {}, outdoor: {} };
 for (const main_cat_key in raw_image_files) {
   const main_cat_lower = main_cat_key.toLowerCase();
@@ -208,9 +181,14 @@ for (const main_cat_key in raw_image_files) {
   }
 }
 const all_sounds = raw_sound_files.map(filename => `sounds/${filename}`);
+
+// =========================================================================
+// 刺激生成ロジック
+// =========================================================================
+
+// --- 音声刺激の準備 ---
 const NUM_AB_PAIRS = 4;
 const NUM_X_TRIALS = 4;
-const TOTAL_LEARNING_TRIALS = (NUM_AB_PAIRS * 2) + NUM_X_TRIALS;
 let shuffled_sounds = jsPsych.randomization.shuffle(all_sounds);
 const sounds_for_A = shuffled_sounds.slice(0, NUM_AB_PAIRS);
 const sounds_for_B = shuffled_sounds.slice(NUM_AB_PAIRS, NUM_AB_PAIRS * 2);
@@ -219,32 +197,32 @@ const learned_sound_pairs = [];
 for (let i = 0; i < NUM_AB_PAIRS; i++) {
   learned_sound_pairs.push([sounds_for_A[i], sounds_for_B[i]]);
 }
-let temp_image_list = [];
-const subcategory_refs = [];
+
+// --- 学習フェーズの刺激を生成 (120試行) ---
+const NUM_IMAGES_PER_CATEGORY = 12;
+let learning_images = [];
 for (const main_cat in image_files) {
-  for (const sub_cat in image_files[main_cat]) {
-    subcategory_refs.push({ main: main_cat, sub: sub_cat });
-  }
+    for (const sub_cat in image_files[main_cat]) {
+        const sampled_images = jsPsych.randomization.sampleWithoutReplacement(image_files[main_cat][sub_cat], NUM_IMAGES_PER_CATEGORY);
+        learning_images.push(...sampled_images);
+    }
 }
-subcategory_refs.forEach(ref => {
-  const image_array = image_files[ref.main][ref.sub];
-  temp_image_list.push(jsPsych.randomization.sampleWithoutReplacement(image_array, 1));
-});
-const shuffled_refs = jsPsych.randomization.shuffle([...subcategory_refs]);
-const extra_refs = shuffled_refs.slice(0, 2);
-extra_refs.forEach(ref => {
-  const image_array = image_files[ref.main][ref.sub];
-  temp_image_list.push(jsPsych.randomization.sampleWithoutReplacement(image_array, 1));
-});
-const learning_images = jsPsych.randomization.shuffle(temp_image_list.flat());
-let trial_blocks = [];
+learning_images = jsPsych.randomization.shuffle(learning_images);
+
+let base_trial_blocks = [];
 for (let i = 0; i < NUM_AB_PAIRS; i++) {
-  trial_blocks.push({ type: 'AB_PAIR', sound_A: sounds_for_A[i], sound_B: sounds_for_B[i] });
+  base_trial_blocks.push({ type: 'AB_PAIR', sound_A: sounds_for_A[i], sound_B: sounds_for_B[i] });
 }
 for (let i = 0; i < NUM_X_TRIALS; i++) {
-  trial_blocks.push({ type: 'X_TRIAL', sound_X: sounds_for_X[i] });
+  base_trial_blocks.push({ type: 'X_TRIAL', sound_X: sounds_for_X[i] });
 }
-let shuffled_blocks = jsPsych.randomization.shuffle(trial_blocks);
+
+let repeated_blocks = [];
+for(let i = 0; i < 10; i++){
+    repeated_blocks.push(...base_trial_blocks);
+}
+let shuffled_blocks = jsPsych.randomization.shuffle(repeated_blocks);
+
 let image_counter = 0;
 const learning_stimuli = [];
 shuffled_blocks.forEach(block => {
@@ -255,17 +233,20 @@ shuffled_blocks.forEach(block => {
     learning_stimuli.push({ image: learning_images[image_counter++], sound: block.sound_X, sound_pattern: 'パターンX' });
   }
 });
+
+// --- テストフェーズの刺激を生成 ---
 const all_image_paths_flat = Object.values(image_files.indoor).concat(Object.values(image_files.outdoor)).flat();
 const unused_images = all_image_paths_flat.filter(img => !learning_images.includes(img));
-const new_images_for_test = jsPsych.randomization.sampleWithoutReplacement(unused_images, 10);
+const new_images_for_test = jsPsych.randomization.sampleWithoutReplacement(unused_images, learning_images.length);
 const image_recognition_stimuli = [
   ...learning_images.map(img => ({ image: img, status: 'old', correct_response: 'j' })),
   ...new_images_for_test.map(img => ({ image: img, status: 'new', correct_response: 'k' }))
 ];
-const unused_sounds = shuffled_sounds.slice(TOTAL_LEARNING_TRIALS);
+const TOTAL_SOUNDS_USED = (NUM_AB_PAIRS * 2) + NUM_X_TRIALS;
+const unused_sounds_for_test = shuffled_sounds.slice(TOTAL_SOUNDS_USED);
 const new_sound_pairs = [];
 for (let i = 0; i < NUM_AB_PAIRS; i++) {
-  new_sound_pairs.push([unused_sounds[i*2], unused_sounds[i*2 + 1]]);
+  new_sound_pairs.push([unused_sounds_for_test[i*2], unused_sounds_for_test[i*2 + 1]]);
 }
 const sound_2afc_stimuli = [];
 const shuffled_old_pairs = jsPsych.randomization.shuffle(learned_sound_pairs);
@@ -279,6 +260,8 @@ for (let i = 0; i < NUM_AB_PAIRS; i++) {
     correct_response: presentation_order[0] === 'old' ? 'j' : 'k'
   });
 }
+
+// -------------------- タイムラインの構築 --------------------
 const all_image_paths_for_preload = learning_images.concat(new_images_for_test);
 const all_sound_paths_for_preload = shuffled_sounds;
 const preload_trial = {
@@ -288,6 +271,7 @@ const preload_trial = {
   message: '実験の準備をしています。しばらくお待ちください...'
 };
 timeline.push(preload_trial);
+
 const learning_procedure = {
   type: jsPsychHtmlKeyboardResponse,
   stimulus: function() {
@@ -315,8 +299,10 @@ const learning_procedure = {
     audio.play();
   }
 };
-const learning_stimuli_part1 = learning_stimuli.slice(0, 6);
-const learning_stimuli_part2 = learning_stimuli.slice(6);
+
+const learning_stimuli_part1 = learning_stimuli.slice(0, 60);
+const learning_stimuli_part2 = learning_stimuli.slice(60);
+
 const learning_block_1 = {
   timeline: [learning_procedure],
   timeline_variables: learning_stimuli_part1,
@@ -331,6 +317,7 @@ timeline.push(learning_block_1);
 timeline.push(break_trial);
 timeline.push(learning_block_2);
 timeline.push(instructions_test_start);
+
 const image_recognition_procedure = {
   type: jsPsychHtmlKeyboardResponse,
   stimulus: function() {
@@ -358,42 +345,48 @@ const image_recognition_block = {
   randomize_order: true
 };
 timeline.push(image_recognition_block);
+
 const instructions_sound_2afc = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: `
         <p><strong>【音声ペアテスト】</strong></p>
-        <p>これから、2組の音声ペアが連続で再生されます（1組目...2組目...）。</p>
-        <p>2組のペアのうち、どちらが学習フェーズで聞いたペアだったかを判断してください。</p>
         <p>準備ができたら、何かキーを押して開始してください。</p>
     `,
     post_trial_gap: 500
 };
 timeline.push(instructions_sound_2afc);
+
 const sound_2afc_playback_trial = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: '<p style="font-size: 1.5em;">再生準備中...</p>',
     choices: "NO_KEYS",
-    on_load: function() {
-        const display_element = jsPsych.getDisplayElement();
-        const stimulus_div = display_element.querySelector('#jspsych-html-keyboard-response-stimulus');
-        const old_pair = jsPsych.timelineVariable('old_pair');
-        const new_pair = jsPsych.timelineVariable('new_pair');
-        const presentation_order = jsPsych.timelineVariable('presentation_order');
+    trial_duration: 500,
+    on_finish: function() {
+        const old_pair = jsPsych.timelineVariable('old_pair', true);
+        const new_pair = jsPsych.timelineVariable('new_pair', true);
+        const presentation_order = jsPsych.timelineVariable('presentation_order', true);
+
         const first_pair_sounds = presentation_order[0] === 'old' ? old_pair : new_pair;
         const second_pair_sounds = presentation_order[1] === 'old' ? old_pair : new_pair;
+
         const audio1 = new Audio(first_pair_sounds[0]);
         const audio2 = new Audio(first_pair_sounds[1]);
         const audio3 = new Audio(second_pair_sounds[0]);
         const audio4 = new Audio(second_pair_sounds[1]);
+        
+        const display_element = jsPsych.getDisplayElement();
+        const stimulus_div = display_element.querySelector('#jspsych-html-keyboard-response-stimulus');
+
         const play_second_pair = () => {
-            stimulus_div.innerHTML = '<p style="font-size: 1.5em;">2組目...</p>';
+            if(stimulus_div) stimulus_div.innerHTML = '<p style="font-size: 1.5em;">2組目...</p>';
             setTimeout(() => { audio3.play(); }, 700);
         };
-        audio1.addEventListener('ended', () => audio2.play());
+
+        audio1.addEventListener('ended', () => setTimeout(() => audio2.play(), 100));
         audio2.addEventListener('ended', play_second_pair);
-        audio3.addEventListener('ended', () => audio4.play());
-        audio4.addEventListener('ended', () => jsPsych.finishTrial());
-        stimulus_div.innerHTML = '<p style="font-size: 1.5em;">1組目...</p>';
+        audio3.addEventListener('ended', () => setTimeout(() => audio4.play(), 100));
+        
+        if(stimulus_div) stimulus_div.innerHTML = '<p style="font-size: 1.5em;">1組目...</p>';
         audio1.play();
     }
 };
@@ -420,4 +413,6 @@ const sound_recognition_block = {
   timeline_variables: sound_2afc_stimuli
 };
 timeline.push(sound_recognition_block);
+
+// --- 実験の実行 ---
 jsPsych.run(timeline);
