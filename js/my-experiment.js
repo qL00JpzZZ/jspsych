@@ -8,19 +8,17 @@ function sanitizeFileNamePart(s) {
 function formatPercentFraction(correctCount, totalCount) {
   if (totalCount === 0) return 'N/A';
   const percent = (correctCount / totalCount) * 100;
-  return `${percent.toFixed(1)}%`; // 小数点以下1桁に統一
+  return `${percent.toFixed(1)}%`;
 }
 
 // -------------------- サーバー送信関数 --------------------
 async function saveCsvToServer(filename, csvText) {
   try {
-    // Netlify用のパス
     const response = await fetch('/.netlify/functions/saveToDrive', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ filename: filename, csv: csvText })
     });
-
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(`Server error: ${response.status} - ${errorData.error}`);
@@ -28,54 +26,95 @@ async function saveCsvToServer(filename, csvText) {
     const result = await response.json();
     console.log('サーバーからの応答:', result);
     return result;
-
   } catch (error) {
     console.error('結果の保存に失敗しました:', error);
     throw error;
   }
 }
 
-// -------------------- jsPsychの初期化と実験フロー --------------------
-let participantInitials = 'unknown'; // グローバル変数としてイニシャルを保持
+// -------------------- jsPsychの初期化 --------------------
+let participantInitials = 'unknown';
 
 const jsPsych = initJsPsych({
   on_finish: async function() {
-    jsPsych.getDisplayElement().innerHTML = '<p>結果を保存しています。しばらくお待ちください...</p>';
+    jsPsych.getDisplayElement().innerHTML = '<p style="font-size: 20px;">結果を保存しています。しばらくお待ちください...</p>';
 
-    // 各試行で記録した`data.correct`を使って集計
-    const image_test_results = jsPsych.data.get().filter({ task_phase: 'image_recognition' });
-    const sound_test_results = jsPsych.data.get().filter({ task_phase: 'sound_recognition' });
+    // --- 【↓↓↓ ここから修正 ↓↓↓】 ---
 
-    const image_total = image_test_results.count();
-    const image_correct = image_test_results.filter({ correct: true }).count();
-    const image_percent = formatPercentFraction(image_correct, image_total);
+    // 1. 全ての試行データを取得
+    const all_data = jsPsych.data.get();
+    const image_test_trials = all_data.filter({ task_phase: 'image_recognition' });
+    const sound_test_trials = all_data.filter({ task_phase: 'sound_recognition' });
 
-    const sound_total = sound_test_results.count();
-    const sound_correct = sound_test_results.filter({ correct: true }).count();
-    const sound_percent = formatPercentFraction(sound_correct, sound_total);
+    // 2. 音声ペアテストの全体の正答率を計算
+    const sound_total = sound_test_trials.count();
+    const sound_correct = sound_test_trials.filter({ correct: true }).count();
+    const sound_percent_overall = formatPercentFraction(sound_correct, sound_total);
+    
+    // 3. 学習時の音カテゴリ別に画像テストの正答率を集計するためのカウンターを準備
+    const accuracy_by_sound = {
+        'パターンA': { correct: 0, total: 0 },
+        'パターンB': { correct: 0, total: 0 },
+        'パターンX': { correct: 0, total: 0 }
+    };
 
-    // CSV生成と保存
-    let csvData = jsPsych.data.get().csv();
-    const summaryHeader = "\n--- Summary ---";
-    const summaryData = `\nImage Recognition Accuracy,${image_percent}\nSound Pair Accuracy,${sound_percent}`;
-    const csvToSave = csvData + "\n" + summaryHeader + "\n" + summaryData;
+    // 4. 画像テストの各試行をループ処理
+    image_test_trials.values().forEach(test_trial => {
+        // 学習時に提示された画像（'old'ステータスの画像）のみを集計対象とする
+        if (test_trial.status === 'old') {
+            // 同じ画像ファイル名を持つ学習フェーズの試行を探す
+            const learning_trial = all_data.filter({
+                task_phase: 'learning',
+                image_filename: test_trial.image_filename
+            }).values()[0];
+
+            // 対応する学習試行が見つかった場合
+            if (learning_trial) {
+                const sound_pattern = learning_trial.sound_pattern;
+                if (accuracy_by_sound[sound_pattern]) {
+                    // カテゴリごとの合計試行数をカウント
+                    accuracy_by_sound[sound_pattern].total++;
+                    // 正解していれば、正解数もカウント
+                    if (test_trial.correct) {
+                        accuracy_by_sound[sound_pattern].correct++;
+                    }
+                }
+            }
+        }
+    });
+
+    // 5. カテゴリごとの正答率（%）を計算
+    const percent_A = formatPercentFraction(accuracy_by_sound['パターンA'].correct, accuracy_by_sound['パターンA'].total);
+    const percent_B = formatPercentFraction(accuracy_by_sound['パターンB'].correct, accuracy_by_sound['パターンB'].total);
+    const percent_X = formatPercentFraction(accuracy_by_sound['パターンX'].correct, accuracy_by_sound['パターンX'].total);
+
+    // 6. CSVデータを生成し、サマリー情報を追記
+    let csvData = all_data.csv();
+    const summaryHeader = "\n\n--- Summary ---";
+    const summaryOverall = `\nOverall Sound Pair Accuracy,${sound_percent_overall}`;
+    const summaryByCategoryHeader = `\n\n--- Image Recognition Accuracy for Learned Items ---`;
+    const summaryA = `\nPaired with Pattern A,${percent_A}`;
+    const summaryB = `\nPaired with Pattern B,${percent_B}`;
+    const summaryX = `\nPaired with Pattern X,${percent_X}`;
+    
+    const csvToSave = csvData + summaryHeader + summaryOverall + summaryByCategoryHeader + summaryA + summaryB + summaryX;
+
+    // --- 【↑↑↑ ここまで修正 ↑↑↑】 ---
+
+    // 7. ファイル名を生成しサーバーへ送信
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `${participantInitials}_${timestamp}.csv`;
 
     try {
       await saveCsvToServer(filename, csvToSave);
-      console.log('保存成功');
+      jsPsych.getDisplayElement().innerHTML = '<div style="text-align: center; max-width: 800px; font-size: 20px;"><h2>実験終了</h2><p>結果は正常に保存されました。</p><p>ご協力いただき、誠にありがとうございました。このウィンドウを閉じて実験を終了してください。</p></div>';
     } catch (err) {
-      console.error('サーバーへの保存中にエラーが発生しました:', err);
-      alert('結果の保存中にエラーが発生しました。詳細は開発者コンソールを確認してください。');
+      jsPsych.getDisplayElement().innerHTML = '<div style="text-align: center; max-width: 800px; font-size: 20px;"><h2>エラー</h2><p>エラーが発生し、結果を保存できませんでした。</p><p>お手数ですが、実験実施者にお知らせください。</p></div>';
     }
-
-    // 最終結果表示
-    jsPsych.getDisplayElement().innerHTML = '<div style="text-align: center;"><p>結果は正常に保存されました。</p><p>ご協力ありがとうございました。このウィンドウを閉じて実験を終了してください。</p></div>';
   }
 });
 
-// -------------------- イニシャル入力試行 --------------------
+// -------------------- 各種試行の定義 --------------------
 const initials_trial = {
   type: jsPsychSurveyText,
   questions: [
@@ -88,7 +127,6 @@ const initials_trial = {
   }
 };
 
-// -------------------- 説明文の定義 --------------------
 const instructions_start = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: `
@@ -104,22 +142,23 @@ const instructions_start = {
                 <strong>・屋内画像の場合：「J」キー</strong><br>
                 <strong>・屋外画像の場合：「K」キー</strong><br>
                 <br>
-                このフェーズでは、合計12枚の画像と音声のペアが提示されます。画像のカテゴリ判断に集中してください。</li>
+                このフェーズでは、合計120枚の画像と音声のペアが提示されます。画像のカテゴリ判断に集中してください。</li>
                 <br>
                 <li><strong>テストフェーズ</strong><br>
                 学習フェーズで記憶した内容に関するテストを行います。テストは「画像再認テスト」と「音声ペア再認テスト」の2種類です。詳細は各テストの直前に説明します。</li>
             </ol>
             <p><strong>【所要時間と注意点】</strong></p>
-            <p>実験全体の所要時間は約5分です。実験中は、静かで集中できる環境でご参加ください。また、PCのスピーカーまたはイヤホンから音声が聞こえる状態にしてください。</p>
-            <p>準備ができましたら、何かキーを押して最初の課題（学習フェーズ）を開始してください。</p>
+            <p>実験全体の所要時間は約15〜20分です。実験中は、静かで集中できる環境でご参加ください。また、PCのスピーカーまたはイヤホンから音声が聞こえる状態にしてください。</p>
+            <p>準備ができましたら、<strong>スペースキー</strong>を押して最初の課題（学習フェーズ）を開始してください。</p>
         </div>
     `,
+    choices: [' '],
     post_trial_gap: 500
 };
 const break_trial = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: `
-        <div style="max-width: 800px; text-align: left; line-height: 1.6;">
+        <div style="max-width: 800px; text-align: center; line-height: 1.6;">
             <p>ここで一度休憩を取ります。</p>
             <p>学習フェーズはこれで半分終了です。</p>
             <p>準備ができましたら、<strong>スペースキー</strong>を押して後半を開始してください。</p>
@@ -146,13 +185,14 @@ const instructions_test_start = {
             <p><strong>・2組目が学習したペアの場合：「K」キー</strong></p>
             <br>
             <p>どちらのテストも、できるだけ速く、正確に回答するよう心がけてください。</p>
-            <p>準備ができましたら、何かキーを押して最初のテスト（画像再認テスト）を開始してください。</p>
+            <p>準備ができましたら、<strong>スペースキー</strong>を押して最初のテスト（画像再認テスト）を開始してください。</p>
         </div>
     `,
+    choices: [' '],
     post_trial_gap: 500
 };
 
-// --- 画像ファイルリスト ---
+// --- 画像・音声ファイルリスト ---
 const raw_image_files = {
   INDOOR: {
     grocerystore: [ '056_2.jpg', 'idd_supermarche.jpg', '08082003_aisle.jpg', 'int89.jpg', '100-0067_IMG.jpg', 'intDSCF0784_PhotoRedukto.jpg', '1798025006_f8c475b3fd.jpg', 'integral-color4_detail.jpg', '20070831draguenewyorkOK.jpg', 'japanese-food-fruit-stand.jpg', '22184680.jpg', 'kays-1.jpg', '44l.jpg', 'main.jpg', '9d37cca1-088e-4812-a319-9f8d3fcf37a1.jpg', 'market.jpg', 'APRIL242002FakeGroceryStore.jpg', 'mod16b.jpg', 'Grocery Store 1.jpg', 'papas2.jpg', 'Grocery Store 2.jpg', 'safeway_fireworks.jpg', 'Grocery-store-Moscow.jpg', 'shop04.jpg', 'IMG_0104-Takashimaya-fruit.jpg', 'shop12.jpg', 'IMG_0637.jpg', 'shop13.jpg', 'Inside the supermarket.jpg', 'shop14.jpg', 'MG_56_belo grocery 2.jpg', 'shop15.jpg', 'MainFoodStoreProduce1.jpg', 'shop16.jpg', 'Market5.jpg', 'shop17.jpg', 'Modi-in-Ilit-Colonie-Supermarche-1-2.jpg', 'shop18.jpg', 'Picture_22.jpg', 'shop30.jpg', 'ahpf.supermarche02.jpg', 'store.counter.jpg', 'ahpf.supermarche4.jpg', 'super_market.jpg', 'big-Grocery-Store.jpg', 'supermarch_.jpg', 'cbra3.jpg', 'supermarche-1.jpg', 'coffee_sold_supermarket_1.jpg', 'supermarche3-1.jpg', 'courses01.jpg', 'supermarche33-1.jpg', 'duroseshopDM1710_468x527.jpg', 'supermarket.jpg', 'grocery-store-740716-1.jpg', 'supermarket5.jpg', 'grocery.jpg', 'supermarket66.jpg', 'gs-image-Grocery_LEED-09-10.jpg', 'supermarket_rear_case_isles.jpg', ],
