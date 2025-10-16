@@ -4,12 +4,6 @@ function sanitizeFileNamePart(s) {
   if (!s) return 'unknown';
   return String(s).trim().replace(/[,\/\\()?%#:*"|<>]/g, '_').replace(/\s+/g, '_').slice(0, 50);
 }
-// 正答率を計算・フォーマットする
-function formatPercentFraction(correctCount, totalCount) {
-  if (totalCount === 0) return 'N/A';
-  const percent = (correctCount / totalCount) * 100;
-  return `${percent.toFixed(1)}%`;
-}
 
 // -------------------- サーバー送信関数 --------------------
 async function saveCsvToServer(filename, csvText) {
@@ -38,75 +32,13 @@ let participantInitials = 'unknown';
 const jsPsych = initJsPsych({
   on_finish: async function() {
     jsPsych.getDisplayElement().innerHTML = '<p style="font-size: 20px;">結果を保存しています。しばらくお待ちください...</p>';
-
-    // --- 【↓↓↓ ここから修正 ↓↓↓】 ---
-
-    // 1. 全ての試行データを取得
-    const all_data = jsPsych.data.get();
-    const image_test_trials = all_data.filter({ task_phase: 'image_recognition' });
-    const sound_test_trials = all_data.filter({ task_phase: 'sound_recognition' });
-
-    // 2. 音声ペアテストの全体の正答率を計算
-    const sound_total = sound_test_trials.count();
-    const sound_correct = sound_test_trials.filter({ correct: true }).count();
-    const sound_percent_overall = formatPercentFraction(sound_correct, sound_total);
     
-    // 3. 学習時の音カテゴリ別に画像テストの正答率を集計するためのカウンターを準備
-    const accuracy_by_sound = {
-        'パターンA': { correct: 0, total: 0 },
-        'パターンB': { correct: 0, total: 0 },
-        'パターンX': { correct: 0, total: 0 }
-    };
-
-    // 4. 画像テストの各試行をループ処理
-    image_test_trials.values().forEach(test_trial => {
-        // 学習時に提示された画像（'old'ステータスの画像）のみを集計対象とする
-        if (test_trial.status === 'old') {
-            // 同じ画像ファイル名を持つ学習フェーズの試行を探す
-            const learning_trial = all_data.filter({
-                task_phase: 'learning',
-                image_filename: test_trial.image_filename
-            }).values()[0];
-
-            // 対応する学習試行が見つかった場合
-            if (learning_trial) {
-                const sound_pattern = learning_trial.sound_pattern;
-                if (accuracy_by_sound[sound_pattern]) {
-                    // カテゴリごとの合計試行数をカウント
-                    accuracy_by_sound[sound_pattern].total++;
-                    // 正解していれば、正解数もカウント
-                    if (test_trial.correct) {
-                        accuracy_by_sound[sound_pattern].correct++;
-                    }
-                }
-            }
-        }
-    });
-
-    // 5. カテゴリごとの正答率（%）を計算
-    const percent_A = formatPercentFraction(accuracy_by_sound['パターンA'].correct, accuracy_by_sound['パターンA'].total);
-    const percent_B = formatPercentFraction(accuracy_by_sound['パターンB'].correct, accuracy_by_sound['パターンB'].total);
-    const percent_X = formatPercentFraction(accuracy_by_sound['パターンX'].correct, accuracy_by_sound['パターンX'].total);
-
-    // 6. CSVデータを生成し、サマリー情報を追記
-    let csvData = all_data.csv();
-    const summaryHeader = "\n\n--- Summary ---";
-    const summaryOverall = `\nOverall Sound Pair Accuracy,${sound_percent_overall}`;
-    const summaryByCategoryHeader = `\n\n--- Image Recognition Accuracy for Learned Items ---`;
-    const summaryA = `\nPaired with Pattern A,${percent_A}`;
-    const summaryB = `\nPaired with Pattern B,${percent_B}`;
-    const summaryX = `\nPaired with Pattern X,${percent_X}`;
-    
-    const csvToSave = csvData + summaryHeader + summaryOverall + summaryByCategoryHeader + summaryA + summaryB + summaryX;
-
-    // --- 【↑↑↑ ここまで修正 ↑↑↑】 ---
-
-    // 7. ファイル名を生成しサーバーへ送信
+    let csvData = jsPsych.data.get().csv();
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `${participantInitials}_${timestamp}.csv`;
 
     try {
-      await saveCsvToServer(filename, csvToSave);
+      await saveCsvToServer(filename, csvData);
       jsPsych.getDisplayElement().innerHTML = '<div style="text-align: center; max-width: 800px; font-size: 20px;"><h2>実験終了</h2><p>結果は正常に保存されました。</p><p>ご協力いただき、誠にありがとうございました。このウィンドウを閉じて実験を終了してください。</p></div>';
     } catch (err) {
       jsPsych.getDisplayElement().innerHTML = '<div style="text-align: center; max-width: 800px; font-size: 20px;"><h2>エラー</h2><p>エラーが発生し、結果を保存できませんでした。</p><p>お手数ですが、実験実施者にお知らせください。</p></div>';
@@ -469,4 +401,4 @@ timeline.push(instructions_sound_2afc);
 timeline.push(sound_recognition_block);
 
 // --- 実験の実行 ---
-jsPsych.run(timeline)
+jsPsych.run(timeline);
