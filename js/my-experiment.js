@@ -32,34 +32,13 @@ let participantInitials = 'unknown';
 const jsPsych = initJsPsych({
   on_finish: async function() {
     jsPsych.getDisplayElement().innerHTML = '<p style="font-size: 20px;">結果を保存しています。しばらくお待ちください...</p>';
-
-    // 1. まず正答率を計算する
-    const image_test_results = jsPsych.data.get().filter({ task_phase: 'image_recognition' });
-    const sound_test_results = jsPsych.data.get().filter({ task_phase: 'sound_recognition' });
-
-    const image_total = image_test_results.count();
-    const image_correct = image_test_results.filter({ correct: true }).count();
-    const image_percent = `${(image_correct / image_total * 100).toFixed(1)}%`;
-
-    const sound_total = sound_test_results.count();
-    const sound_correct = sound_test_results.filter({ correct: true }).count();
-    const sound_percent = `${(sound_correct / sound_total * 100).toFixed(1)}%`;
-
-    // 2. jsPsychの生データ（CSV形式）を取得
+    
     let csvData = jsPsych.data.get().csv();
-
-    // 3. 生データの末尾に、計算した正答率のサマリーを追加
-    const summaryHeader = "\n\n--- Summary ---";
-    const summaryData = `\nImage Recognition Accuracy,${image_percent}\nSound Pair Accuracy,${sound_percent}`;
-    const csvToSave = csvData + summaryHeader + summaryData;
-
-    // 4. ファイル名を生成
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `${participantInitials}_${timestamp}.csv`;
 
     try {
-      // 5. サマリー付きのデータをサーバーに送信
-      await saveCsvToServer(filename, csvToSave);
+      await saveCsvToServer(filename, csvData);
       jsPsych.getDisplayElement().innerHTML = '<div style="text-align: center; max-width: 800px; font-size: 20px;"><h2>実験終了</h2><p>結果は正常に保存されました。</p><p>ご協力いただき、誠にありがとうございました。このウィンドウを閉じて実験を終了してください。</p></div>';
     } catch (err) {
       jsPsych.getDisplayElement().innerHTML = '<div style="text-align: center; max-width: 800px; font-size: 20px;"><h2>エラー</h2><p>エラーが発生し、結果を保存できませんでした。</p><p>お手数ですが、実験実施者にお知らせください。</p></div>';
@@ -181,6 +160,8 @@ const all_sounds = raw_sound_files.map(filename => `sounds/${filename}`);
 // =========================================================================
 // 刺激生成ロジック
 // =========================================================================
+
+// --- 音声刺激の準備 ---
 const NUM_AB_PAIRS = 4;
 const NUM_X_TRIALS = 4;
 let shuffled_sounds = jsPsych.randomization.shuffle(all_sounds);
@@ -191,6 +172,8 @@ const learned_sound_pairs = [];
 for (let i = 0; i < NUM_AB_PAIRS; i++) {
   learned_sound_pairs.push([sounds_for_A[i], sounds_for_B[i]]);
 }
+
+// --- 学習フェーズの刺激を生成 (120試行) ---
 const NUM_IMAGES_PER_CATEGORY = 12;
 let learning_images = [];
 for (const main_cat in image_files) {
@@ -200,6 +183,7 @@ for (const main_cat in image_files) {
     }
 }
 learning_images = jsPsych.randomization.shuffle(learning_images);
+
 let base_trial_blocks = [];
 for (let i = 0; i < NUM_AB_PAIRS; i++) {
   base_trial_blocks.push({ type: 'AB_PAIR', sound_A: sounds_for_A[i], sound_B: sounds_for_B[i] });
@@ -207,11 +191,13 @@ for (let i = 0; i < NUM_AB_PAIRS; i++) {
 for (let i = 0; i < NUM_X_TRIALS; i++) {
   base_trial_blocks.push({ type: 'X_TRIAL', sound_X: sounds_for_X[i] });
 }
+
 let repeated_blocks = [];
 for(let i = 0; i < 10; i++){
     repeated_blocks.push(...base_trial_blocks);
 }
 let shuffled_blocks = jsPsych.randomization.shuffle(repeated_blocks);
+
 let image_counter = 0;
 const learning_stimuli = [];
 shuffled_blocks.forEach(block => {
@@ -222,6 +208,8 @@ shuffled_blocks.forEach(block => {
     learning_stimuli.push({ image: learning_images[image_counter++], sound: block.sound_X, sound_pattern: 'パターンX' });
   }
 });
+
+// --- テストフェーズの刺激を生成 ---
 const all_image_paths_flat = Object.values(image_files.indoor).concat(Object.values(image_files.outdoor)).flat();
 const unused_images = all_image_paths_flat.filter(img => !learning_images.includes(img));
 const new_images_for_test = jsPsych.randomization.sampleWithoutReplacement(unused_images, 30);
