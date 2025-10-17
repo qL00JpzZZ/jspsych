@@ -1,3 +1,5 @@
+// ファイルパス: js/my-experiment.js
+
 // -------------------- ヘルパー関数 --------------------
 // ファイル名に使えない文字を置換・削除する
 function sanitizeFileNamePart(s) {
@@ -8,8 +10,8 @@ function sanitizeFileNamePart(s) {
 // -------------------- サーバー送信関数 --------------------
 async function saveCsvToServer(filename, csvText) {
   try {
-    // ▼▼▼【ここを修正】APIの呼び出し先URLを変更 ▼▼▼
-    const response = await fetch('/saveToDrive', {
+    // ▼▼▼【Vercel用に修正】APIの呼び出し先URLを変更 ▼▼▼
+    const response = await fetch('/api/saveToDrive', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ filename: filename, csv: csvText })
