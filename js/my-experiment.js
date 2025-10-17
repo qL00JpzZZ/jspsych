@@ -31,11 +31,69 @@ let participantInitials = 'unknown';
 
 const jsPsych = initJsPsych({
   on_finish: async function() {
-    jsPsych.getDisplayElement().innerHTML = '<p style="font-size: 20px;">結果を保存しています。しばらくお待ちください...</p>';
+    jsPsych.getDisplayElement().innerHTML = '<p style="font-size: 20px;">結果を集計・保存しています。しばらくお待ちください...</p>';
     
-    let csvData = jsPsych.data.get().csv();
+    // --- ここからデータ集計ロジック ---
+
+    // 1. 各フェーズの試行データを取得
+    const learning_trials = jsPsych.data.get().filter({ task_phase: 'learning' }).values();
+    const image_rec_trials = jsPsych.data.get().filter({ task_phase: 'image_recognition' }).values();
+    const sound_rec_trials = jsPsych.data.get().filter({ task_phase: 'sound_recognition' }).values();
+
+    // 2. 学習フェーズの画像と音声パターンの対応表を作成
+    const image_to_sound_map = new Map();
+    for (const trial of learning_trials) {
+        image_to_sound_map.set(trial.image_filename, trial.sound_pattern);
+    }
+
+    // 3. 画像再認テストの正答率を音声パターン別に集計
+    const image_rec_stats = {
+      'パターンA': { correct: 0, total: 0 },
+      'パターンB': { correct: 0, total: 0 },
+      'パターンX': { correct: 0, total: 0 }
+    };
+
+    for (const trial of image_rec_trials) {
+      // 学習で提示された画像（'old'）のみを集計対象とする
+      if (trial.status === 'old') {
+        const filename = trial.image_filename;
+        const sound_pattern = image_to_sound_map.get(filename);
+        if (sound_pattern && image_rec_stats[sound_pattern]) {
+          image_rec_stats[sound_pattern].total++;
+          if (trial.correct) {
+            image_rec_stats[sound_pattern].correct++;
+          }
+        }
+      }
+    }
+
+    // 正答率を計算し、パーセンテージ（有効数字2桁）にフォーマットする関数
+    function calculate_percentage(correct, total) {
+      if (total === 0) {
+        return 0;
+      }
+      const percentage = (correct / total) * 100;
+      // toPrecisionは文字列を返すため、 parseFloat で数値に戻す
+      return parseFloat(percentage.toPrecision(2));
+    }
+
+    const image_accuracy_A = calculate_percentage(image_rec_stats['パターンA'].correct, image_rec_stats['パターンA'].total);
+    const image_accuracy_B = calculate_percentage(image_rec_stats['パターンB'].correct, image_rec_stats['パターンB'].total);
+    const image_accuracy_X = calculate_percentage(image_rec_stats['パターンX'].correct, image_rec_stats['パターンX'].total);
+
+    // 4. 音声ペア再認テストの全体の正答率を集計
+    const sound_correct_count = sound_rec_trials.filter(trial => trial.correct).length;
+    const sound_accuracy = calculate_percentage(sound_correct_count, sound_rec_trials.length);
+
+    // 5. 保存用のCSV文字列を生成
+    const header = 'participant_initials,image_accuracy_A,image_accuracy_B,image_accuracy_X,sound_accuracy\n';
+    const results_row = `${participantInitials},${image_accuracy_A},${image_accuracy_B},${image_accuracy_X},${sound_accuracy}`;
+    const csvData = header + results_row;
+    
+    // --- ここまでデータ集計ロジック ---
+
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const filename = `${participantInitials}_${timestamp}.csv`;
+    const filename = `summary_${participantInitials}_${timestamp}.csv`;
 
     try {
       await saveCsvToServer(filename, csvData);
@@ -46,7 +104,10 @@ const jsPsych = initJsPsych({
   }
 });
 
+
 // -------------------- 各種試行の定義 --------------------
+// （この下のコードは変更ありません）
+// ---------------------------------------------------------
 const initials_trial = {
   type: jsPsychSurveyText,
   questions: [
@@ -296,6 +357,7 @@ const image_recognition_procedure = {
     <p style="font-size: 1.2em;"><b>J</b> = はい、見ました / <b>K</b> = いいえ、見ていません</p>`,
   data: {
     image_filename: jsPsych.timelineVariable('image'),
+    status: jsPsych.timelineVariable('status'), // statusをデータに保存
     correct_response: jsPsych.timelineVariable('correct_response'),
     task_phase: 'image_recognition'
   },
