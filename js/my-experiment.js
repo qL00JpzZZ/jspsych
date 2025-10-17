@@ -153,7 +153,7 @@ const practice_instructions_start = {
   stimulus: `
     <div style="max-width: 800px; text-align: left; line-height: 1.6;">
       <p>まず、本番の実験と同じ形式で練習を行います。</p>
-      <p>画面に画像が一瞬だけ表示されます。画像が屋内か屋外かを判断し、<strong>「J」キー（屋内）</strong>または<strong>「K」キー（屋外）</strong>を押してください。</p>
+      <p>画面に画像が表示されます。画像が屋内か屋外かを判断し、<strong>「J」キー（屋内）</strong>または<strong>「K」キー（屋外）</strong>を押してください。</p>
       <p>準備ができたら、<strong>スペースキー</strong>を押して練習を開始してください。</p>
     </div>
   `,
@@ -169,16 +169,13 @@ const practice_procedure = {
             </div>`;
   },
   choices: ['j', 'k'],
-  // 1000ミリ秒（1秒）で画像が消える
-  trial_duration: 1000,
+  // trial_duration を削除し、キー入力があるまで試行が続くように変更
   prompt: '<p style="font-size: 1.2em;"><b>J</b> = 屋内 / <b>K</b> = 屋外</p>',
-  // 練習フェーズのデータだとわかるようにtask_phaseを設定（任意）
   data: {
     task_phase: 'practice'
   }
 };
 
-// ▼▼▼【ご要望のページ】練習終了後にこの画面が表示されます ▼▼▼
 const practice_instructions_end = {
   type: jsPsychHtmlKeyboardResponse,
   stimulus: `
@@ -191,7 +188,6 @@ const practice_instructions_end = {
   choices: [' '],
   post_trial_gap: 500
 };
-// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 const break_trial = {
     type: jsPsychHtmlKeyboardResponse,
@@ -230,18 +226,18 @@ const instructions_test_start = {
     post_trial_gap: 500
 };
 
-// --- 練習用画像ファイルリスト ---
+// --- 練習用画像ファイルリスト（パスを修正） ---
 const practice_image_files = [
-  'practice/scene/amusementpark.jpg',
-  'practice/scene/bar.jpg',
-  'practice/scene/barm.jpg',
-  'practice/scene/bedroom.jpg',
-  'practice/scene/bridge.jpg',
-  'practice/scene/campsite.jpg',
-  'practice/scene/coast.jpg',
-  'practice/scene/conferenceroom.jpg',
-  'practice/scene/empty.jpg',
-  'practice/scene/studio.jpg'
+  'practice/scenes/amusementpark.jpg',
+  'practice/scenes/bar.jpg',
+  'practice/scenes/barm.jpg',
+  'practice/scenes/bedroom.jpg',
+  'practice/scenes/bridge.jpg',
+  'practice/scenes/campsite.jpg',
+  'practice/scenes/coast.jpg',
+  'practice/scenes/conferenceroom.jpg',
+  'practice/scenes/empty.jpg',
+  'practice/scenes/studio.jpg'
 ];
 
 // --- 本番用画像・音声ファイルリスト ---
