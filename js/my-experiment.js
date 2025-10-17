@@ -106,8 +106,6 @@ const jsPsych = initJsPsych({
 
 
 // -------------------- 各種試行の定義 --------------------
-// （この下のコードは変更ありません）
-// ---------------------------------------------------------
 const initials_trial = {
   type: jsPsychSurveyText,
   questions: [
@@ -148,6 +146,53 @@ const instructions_start = {
     choices: [' '],
     post_trial_gap: 500
 };
+
+// --- 練習フェーズ用の定義 ---
+const practice_instructions_start = {
+  type: jsPsychHtmlKeyboardResponse,
+  stimulus: `
+    <div style="max-width: 800px; text-align: left; line-height: 1.6;">
+      <p>まず、本番の実験と同じ形式で練習を行います。</p>
+      <p>画面に画像が一瞬だけ表示されます。画像が屋内か屋外かを判断し、<strong>「J」キー（屋内）</strong>または<strong>「K」キー（屋外）</strong>を押してください。</p>
+      <p>準備ができたら、<strong>スペースキー</strong>を押して練習を開始してください。</p>
+    </div>
+  `,
+  choices: [' '],
+  post_trial_gap: 500
+};
+
+const practice_procedure = {
+  type: jsPsychHtmlKeyboardResponse,
+  stimulus: function() {
+    return `<div style="width: 800px; min-height: 500px; display: flex; align-items: center; justify-content: center;">
+              <img src="${jsPsych.timelineVariable('image')}" style="max-width: 100%; max-height: 500px; height: auto;">
+            </div>`;
+  },
+  choices: ['j', 'k'],
+  // 1000ミリ秒（1秒）で画像が消える
+  trial_duration: 1000,
+  prompt: '<p style="font-size: 1.2em;"><b>J</b> = 屋内 / <b>K</b> = 屋外</p>',
+  // 練習フェーズのデータだとわかるようにtask_phaseを設定（任意）
+  data: {
+    task_phase: 'practice'
+  }
+};
+
+// ▼▼▼【ご要望のページ】練習終了後にこの画面が表示されます ▼▼▼
+const practice_instructions_end = {
+  type: jsPsychHtmlKeyboardResponse,
+  stimulus: `
+    <div style="max-width: 800px; text-align: center; line-height: 1.6;">
+      <p>練習は以上です。</p>
+      <p>次からが本番の実験です。本番では、画像と一緒に音声が流れます。</p>
+      <p>準備ができたら、<strong>スペースキー</strong>を押して本番の実験を開始してください。</p>
+    </div>
+  `,
+  choices: [' '],
+  post_trial_gap: 500
+};
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
 const break_trial = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: `
@@ -185,7 +230,21 @@ const instructions_test_start = {
     post_trial_gap: 500
 };
 
-// --- 画像・音声ファイルリスト ---
+// --- 練習用画像ファイルリスト ---
+const practice_image_files = [
+  'practice/scene/amusementpark.jpg',
+  'practice/scene/bar.jpg',
+  'practice/scene/barm.jpg',
+  'practice/scene/bedroom.jpg',
+  'practice/scene/bridge.jpg',
+  'practice/scene/campsite.jpg',
+  'practice/scene/coast.jpg',
+  'practice/scene/conferenceroom.jpg',
+  'practice/scene/empty.jpg',
+  'practice/scene/studio.jpg'
+];
+
+// --- 本番用画像・音声ファイルリスト ---
 const raw_image_files = {
   INDOOR: {
     grocerystore: [ '056_2.jpg', 'idd_supermarche.jpg', '08082003_aisle.jpg', 'int89.jpg', '100-0067_IMG.jpg', 'intDSCF0784_PhotoRedukto.jpg', '1798025006_f8c475b3fd.jpg', 'integral-color4_detail.jpg', '20070831draguenewyorkOK.jpg', 'japanese-food-fruit-stand.jpg', '22184680.jpg', 'kays-1.jpg', '44l.jpg', 'main.jpg', '9d37cca1-088e-4812-a319-9f8d3fcf37a1.jpg', 'market.jpg', 'APRIL242002FakeGroceryStore.jpg', 'mod16b.jpg', 'Grocery Store 1.jpg', 'papas2.jpg', 'Grocery Store 2.jpg', 'safeway_fireworks.jpg', 'Grocery-store-Moscow.jpg', 'shop04.jpg', 'IMG_0104-Takashimaya-fruit.jpg', 'shop12.jpg', 'IMG_0637.jpg', 'shop13.jpg', 'Inside the supermarket.jpg', 'shop14.jpg', 'MG_56_belo grocery 2.jpg', 'shop15.jpg', 'MainFoodStoreProduce1.jpg', 'shop16.jpg', 'Market5.jpg', 'shop17.jpg', 'Modi-in-Ilit-Colonie-Supermarche-1-2.jpg', 'shop18.jpg', 'Picture_22.jpg', 'shop30.jpg', 'ahpf.supermarche02.jpg', 'store.counter.jpg', 'ahpf.supermarche4.jpg', 'super_market.jpg', 'big-Grocery-Store.jpg', 'supermarch_.jpg', 'cbra3.jpg', 'supermarche-1.jpg', 'coffee_sold_supermarket_1.jpg', 'supermarche3-1.jpg', 'courses01.jpg', 'supermarche33-1.jpg', 'duroseshopDM1710_468x527.jpg', 'supermarket.jpg', 'grocery-store-740716-1.jpg', 'supermarket5.jpg', 'grocery.jpg', 'supermarket66.jpg', 'gs-image-Grocery_LEED-09-10.jpg', 'supermarket_rear_case_isles.jpg', ],
@@ -292,13 +351,25 @@ for (let i = 0; i < 3; i++) {
 // タイムラインの構築と実行
 // =========================================================================
 
-const all_image_paths_for_preload = learning_images.concat(new_images_for_test);
+// --- preload対象に練習画像と本番画像を追加 ---
+const all_image_paths_for_preload = practice_image_files.concat(learning_images, new_images_for_test);
 const all_sound_paths_for_preload = shuffled_sounds;
 const preload_trial = {
   type: jsPsychPreload,
   images: all_image_paths_for_preload,
   audio: all_sound_paths_for_preload,
   message: '実験の準備をしています。しばらくお待ちください...'
+};
+
+// --- 練習ブロックの定義 ---
+const practice_timeline_variables = practice_image_files.map(img_path => {
+  return { image: img_path };
+});
+
+const practice_block = {
+  timeline: [practice_procedure],
+  timeline_variables: practice_timeline_variables,
+  randomize_order: true
 };
 
 const learning_procedure = {
@@ -452,7 +523,12 @@ const sound_recognition_block = {
 // 【重要】すべての試行定義が終わった後で、timelineを定義・構築します
 const timeline = [];
 timeline.push(initials_trial);
+// --- 実験説明の後に練習フェーズを挿入 ---
 timeline.push(instructions_start);
+timeline.push(practice_instructions_start);
+timeline.push(practice_block);
+timeline.push(practice_instructions_end);
+// --- 練習フェーズの挿入ここまで ---
 timeline.push(preload_trial);
 timeline.push(learning_block_1);
 timeline.push(break_trial);
