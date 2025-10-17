@@ -18,6 +18,6 @@
   "homepage": "https://github.com/qL00JpzZZ/jspsych#readme",
   "description": "",
   "dependencies": {
-    "googleapis": "^160.0.0"
+    "googleapis": "^164.0.0"
   }
 }
