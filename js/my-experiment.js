@@ -1,5 +1,3 @@
-// ファイルパス: js/my-experiment.js
-
 // -------------------- ヘルパー関数 --------------------
 // ファイル名に使えない文字を置換・削除する
 function sanitizeFileNamePart(s) {
@@ -10,13 +8,11 @@ function sanitizeFileNamePart(s) {
 // -------------------- サーバー送信関数 --------------------
 async function saveCsvToServer(filename, csvText) {
   try {
-    // ▼▼▼【Vercel用に修正】APIの呼び出し先URLを変更 ▼▼▼
-    const response = await fetch('/api/saveToDrive', {
+    const response = await fetch('/api/saveToDrive', { // Vercel APIのエンドポイント
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ filename: filename, csv: csvText })
     });
-    // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(`Server error: ${response.status} - ${errorData.error}`);
@@ -110,10 +106,25 @@ const jsPsych = initJsPsych({
 
 
 // -------------------- 各種試行の定義 --------------------
+
+// ▼▼▼【ここを修正】イニシャル入力画面のテキストを変更 ▼▼▼
 const initials_trial = {
   type: jsPsychSurveyText,
   questions: [
-    { prompt: "実験を開始します。あなたのイニシャルを半角英数字で入力してください（例: ST）", name: "initials", required: true, placeholder: "例: ST" }
+    { 
+      // prompt の先頭に指定の文章を追加
+      prompt: `
+        <div style="max-width: 800px; text-align: left; line-height: 1.6; margin-bottom: 20px;">
+            <p>本実験は、画像の認識の速さを測ることが目的です。</p>
+            <p>実験時間は個人差がありますが20分程度です。</p>
+            <p>実験参加に同意していただける場合はあらかじめ配布されたIDを入力してください。</p>
+        </div>
+        <p>あなたのIDを半角英数字で入力してください（例: ST）：</p>
+      `, 
+      name: "initials", 
+      required: true, 
+      placeholder: "例: ST" 
+    }
   ],
   button_label: "同意して実験を開始する",
   on_finish: function(data) {
@@ -121,6 +132,7 @@ const initials_trial = {
     jsPsych.data.addProperties({participant_initials: participantInitials});
   }
 };
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 const instructions_start = {
     type: jsPsychHtmlKeyboardResponse,

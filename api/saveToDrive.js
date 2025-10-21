@@ -1,4 +1,5 @@
 // ファイルパス: api/saveToDrive.js
+require('dotenv').config();
 
 const { google } = require('googleapis');
 

@@ -19,5 +19,8 @@
   "description": "",
   "dependencies": {
     "googleapis": "^164.0.0"
+  },
+  "devDependencies": {
+    "dotenv": "^17.2.3"
   }
 }
