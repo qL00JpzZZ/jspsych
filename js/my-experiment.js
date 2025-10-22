@@ -415,7 +415,9 @@ const sound_recognition_trial = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: '<p style="font-size: 1.5em; text-align: center;">音声を再生します...</p>',
     choices: "NO_KEYS",
-    prompt: '',
+    // ▼▼▼ ご要望に応じてこの部分を変更（最初からキー案内を表示） ▼▼▼
+    prompt: `<p style="font-size: 1.2em; text-align: center;"><b>1つ目のパターンの場合は「J」キー</b></p><p style="font-size: 1.2em; text-align: center;"><b>2つ目のパターンの場合は「K」キー</b></p>`,
+    // ▲▲▲ 変更ここまで ▲▲▲
     trial_duration: null,
     response_ends_trial: true,
     data: function(){
@@ -443,15 +445,17 @@ const sound_recognition_trial = {
         const audio4 = new Audio(second_pair_sounds[1]);
         const display_element = jsPsych.getDisplayElement();
         const stimulus_div = display_element.querySelector('.jspsych-html-keyboard-response-stimulus');
-        const prompt_div = display_element.querySelector('.jspsych-html-keyboard-response-prompt');
+        const prompt_div = display_element.querySelector('.jspsych-html-keyboard-response-prompt'); // prompt要素自体は存在する
 
         let soundsPlayed = 0;
         const totalSounds = 4;
         const enableResponse = () => {
             if (stimulus_div) stimulus_div.innerHTML = `<p style="text-align: center;">どちらのペアが課題フェーズで聞いたペアでしたか？</p>`;
-            // ▼▼▼ ご要望に応じてこの部分を変更 ▼▼▼
-            if (prompt_div) prompt_div.innerHTML = `<p style="font-size: 1.2em; text-align: center;"><b>1つ目のパターンの場合は「J」キー</b></p><p style="font-size: 1.2em; text-align: center;"><b>2つ目のパターンの場合は「K」キー</b></p>`;
+            
+            // ▼▼▼ ご要望に応じてこの部分を削除（既にpromptに設定済みのため） ▼▼▼
+            // if (prompt_div) prompt_div.innerHTML = `...`; 
             // ▲▲▲ 変更ここまで ▲▲▲
+            
              jsPsych.pluginAPI.getKeyboardResponse({
                  callback_function: (info) => { jsPsych.finishTrial({ rt: info.rt, response: info.key }); },
                  valid_responses: ['j', 'k'], rt_method: 'performance', persist: false, allow_held_key: false
