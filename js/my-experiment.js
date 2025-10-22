@@ -449,7 +449,9 @@ const sound_recognition_trial = {
         const totalSounds = 4;
         const enableResponse = () => {
             if (stimulus_div) stimulus_div.innerHTML = `<p style="text-align: center;">どちらのペアが課題フェーズで聞いたペアでしたか？</p>`;
-            if (prompt_div) prompt_div.innerHTML = `<p style="font-size: 1.2em; text-align: center;"><b>J</b> = 1組目 / <b>K</b> = 2組目</p>`;
+            // ▼▼▼ ご要望に応じてこの部分を変更 ▼▼▼
+            if (prompt_div) prompt_div.innerHTML = `<p style="font-size: 1.2em; text-align: center;"><b>1つ目のパターンの場合は「J」キー</b></p><p style="font-size: 1.2em; text-align: center;"><b>2つ目のパターンの場合は「K」キー</b></p>`;
+            // ▲▲▲ 変更ここまで ▲▲▲
              jsPsych.pluginAPI.getKeyboardResponse({
                  callback_function: (info) => { jsPsych.finishTrial({ rt: info.rt, response: info.key }); },
                  valid_responses: ['j', 'k'], rt_method: 'performance', persist: false, allow_held_key: false
@@ -465,6 +467,8 @@ const sound_recognition_trial = {
         audio2.addEventListener('error', (e) => { console.error("Audio 2 error:", e); soundEnded(); });
         audio3.addEventListener('error', (e) => { console.error("Audio 3 error:", e); soundEnded(); });
         audio4.addEventListener('error', (e) => { console.error("Audio 4 error:", e); soundEnded(); });
+        
+        // 「1組目...」と表示して再生する部分
         const play_second_pair = () => {
             if(stimulus_div) stimulus_div.innerHTML = '<p style="font-size: 1.5em; text-align: center;">2組目...</p>';
             setTimeout(() => { audio3.play().catch(e => { console.error("Audio 3 play failed:", e); soundEnded(); }); }, 700);
@@ -472,6 +476,8 @@ const sound_recognition_trial = {
         audio1.addEventListener('ended', () => setTimeout(() => audio2.play().catch(e => { console.error("Audio 2 play failed:", e); soundEnded(); }), 100));
         audio2.addEventListener('ended', play_second_pair);
         audio3.addEventListener('ended', () => setTimeout(() => audio4.play().catch(e => { console.error("Audio 4 play failed:", e); soundEnded(); }), 100));
+        
+        // 「2組目...」と表示して再生する部分
         setTimeout(() => {
             if(stimulus_div) stimulus_div.innerHTML = '<p style="font-size: 1.5em; text-align: center;">1組目...</p>';
             audio1.play().catch(e => { console.error("Audio 1 play failed:", e); soundEnded(); });
