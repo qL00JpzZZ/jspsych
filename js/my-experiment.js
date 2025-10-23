@@ -104,7 +104,7 @@ const jsPsych = initJsPsych({
             <div style="max-width: 800px; text-align: center; line-height: 1.6; font-size: 20px;">
                 <h2>実験終了</h2>
                 <p>これで実験は終了です。</p>
-                <p>本実験の目的は画像と音の記憶の関係を調べることでした。</p>
+                <p>本実験の本当の目的は画像と音の記憶の関係を調べることでした。</p>
                 <p>音の連続の記憶がいいときに、画像の連続の記憶も良くなるという仮説を実験で検証しています。</p>
                 <p>ありがとうございました！</p>
                 <p>データが確認でき次第、謝礼のお支払いをいたします。</p>
@@ -235,14 +235,14 @@ const image_rec_break_trial = {
 
 const instructions_image_rec = {
     type: jsPsychHtmlKeyboardResponse,
-    stimulus: `<div style="max-width: 800px; text-align: center; line-height: 1.6;"><p>これから画像の記憶テストが始まります。</p><p>画面に一枚ずつ画像が表示されます。</p><p>その画像を先ほどの課題フェーズで見たかどうかを回答していただきます。</p><br><p style="font-size: 1.2em;">見た画像の場合：「J」キー</p><p style="font-size: 1.2em;">見ていない（初めて見る）画像の場合：「K」キー</p><br><p>できるだけ速く、正確に回答するよう心がけてください。</p><p>準備ができましたら、<strong>スペースキー</strong>を押してテストを開始してください。</p></div>`,
+    stimulus: `<div style="max-width: 800px; text-align: center; line-height: 1.6;"><p>これから画像の記憶テストを行います。</p><p>画面に一枚ずつ画像が表示されます。</p><p>その画像を先ほどの課題で見たかどうかを回答していただきます。</p><br><p style="font-size: 1.2em;">見た画像の場合：「J」キー</p><p style="font-size: 1.2em;">見ていない（初めて見る）画像の場合：「K」キー</p><br><p>できるだけ正確に回答するよう心がけてください。</p><p>準備ができましたら、<strong>スペースキー</strong>を押してテストを開始してください。</p></div>`,
     choices: [' '],
     post_trial_gap: 500
 };
 
 const instructions_sound_rec = {
     type: jsPsychHtmlKeyboardResponse,
-    stimulus: `<div style="max-width: 800px; text-align: center; line-height: 1.6;"><p>これから音の記憶テストが始まります。</p><p>実は前半の課題フェーズでは、いくつかの音の連続（イ→カなど）が繰り返されていました。</p><p>音の記憶テストでは二つの音の連続が提示されます。</p><p>1つ目の連続と、2つ目の連続、どちらを先ほどの課題フェーズの中で聞いたかを回答していただきます。</p><br><p style="font-size: 1.2em;">1組目が学習したペアの場合：「J」キー</p><p style="font-size: 1.2em;">2組目が学習したペアの場合：「K」キー</p><br><p>できるだけ速く、正確に回答するよう心がけてください。</p><p>準備ができましたら、<strong>スペースキー</strong>を押してテストを開始してください。</p></div>`,
+    stimulus: `<div style="max-width: 800px; text-align: center; line-height: 1.6;"><p>これから音の記憶テストを行います。</p><p>実は前半の課題では、いくつかの音の連続（イ→カなど）が繰り返されていました。</p><p>音の記憶テストでは音の連続が2つ提示されます。</p><p>1つ目の連続と、2つ目の連続、どちらを先ほどの課題フェーズの中で聞いたかを回答していただきます。</p><br><p style="font-size: 1.2em;">「1つ目を聞いた」と思った場合：「J」キー</p><p style="font-size: 1.2em;">「2つ目を聞いた」と思った場合：「K」キー</p><br><p>できるだけ正確に回答するよう心がけてください。</p><p>準備ができましたら、<strong>スペースキー</strong>を押してテストを開始してください。</p></div>`,
     choices: [' '],
     post_trial_gap: 500
 };
@@ -292,8 +292,8 @@ const all_sounds = raw_sound_files.map(filename => `sounds/${filename}`);
 // =========================================================================
 // 刺激生成ロジック
 // (変更なし)
-const NUM_AB_PAIRS = 4;
-const NUM_X_TRIALS = 4;
+const NUM_AB_PAIRS = 3;
+const NUM_X_TRIALS = 3;
 let shuffled_sounds = jsPsych.randomization.shuffle(all_sounds);
 const sounds_for_A = shuffled_sounds.slice(0, NUM_AB_PAIRS);
 const sounds_for_B = shuffled_sounds.slice(NUM_AB_PAIRS, NUM_AB_PAIRS * 2);
@@ -339,7 +339,7 @@ console.log("Generated learning stimuli count:", learning_stimuli.length);
 const all_image_paths_flat = [];
 main_cats.forEach(main_cat => { Object.values(image_files[main_cat]).forEach(arr => all_image_paths_flat.push(...arr)); });
 const unused_images = all_image_paths_flat.filter(img => !learning_images.includes(img));
-const num_new_images = learning_images.length;
+const num_new_images = 30;
 const new_images_for_test = jsPsych.randomization.sampleWithoutReplacement(unused_images, num_new_images);
 console.log("Number of 'old' images for test:", learning_images.length);
 console.log("Number of 'new' images for test:", new_images_for_test.length);
