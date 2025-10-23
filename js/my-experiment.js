@@ -179,12 +179,20 @@ const task_explanation_trial = {
     post_trial_gap: 500
 };
 
+// ▼▼▼ ご要望に応じてこの部分を変更 ▼▼▼
 const instructions_start = {
     type: jsPsychHtmlKeyboardResponse,
-    stimulus: `<div style="max-width: 800px; text-align: left; line-height: 1.6;"><p><strong>【実験の目的】</strong></p><p>本実験の目的は、人間の記憶メカニズム、特にエピソード記憶における視聴覚情報の統合過程を調査することです。具体的には、視覚情報（風景画像）と聴覚情報（無意味な音節）が同時に提示された際に、それらがどのように記憶内で関連付けられ、後の記憶再生にどのような影響を与えるかを検証します。</p><p><strong>【課題の内容】</strong></p><p>画面に風景画像（屋内または屋外）が1枚ずつ表示され、それと同時に短い音声が再生されます。あなたの課題は、表示された画像が「屋内」のものか「屋外」のものかを判断し、できるだけ速く、正確にキーボードのキーを押して回答することです。</p><p><strong>・屋内画像の場合：「J」キー</strong><br><strong>・屋外画像の場合：「K」キー</strong></p><p>この課題では、合計120枚の画像と音声のペアが提示されます。画像のカテゴリ判断に集中してください。</p><p><strong>【所要時間と注意点】</strong></p><p>実験全体の所要時間は約15〜20分です。実験中は、静かで集中できる環境でご参加ください。また、PCのスピーカーまたはイヤホンから音声が聞こえる状態にしてください。</p><p>準備ができましたら、<strong>スペースキー</strong>を押して音声確認を開始してください。</p></div>`,
+    stimulus: `<div style="max-width: 800px; text-align: left; line-height: 1.6;">
+<p><strong>【課題の内容】</strong></p><p>画面に風景画像（屋内または屋外）が1枚ずつ表示され、それと同時に短い音声が再生されます。あなたの課題は、表示された画像が「屋内」のものか「屋外」のものかを判断し、できるだけ速く、正確にキーボードのキーを押して回答することです。</p>
+<p><strong>・屋内の場合：「J」キー</strong><br><strong>・屋外画像の場合：「K」キー</strong></p>
+<p>この課題では、合計120枚の画像と音声が同時に提示されます。画像の「屋内」「屋外」の判断に集中してください。</p>
+<p><strong>【所要時間と注意点】</strong></p>
+<p>実験全体の所要時間は約15〜20分です。実験中は、静かで集中できる環境でご参加ください。<strong style="color: red;">また、PCのスピーカーまたはイヤホンから音声が聞こえる状態にしてください。</strong></p>
+<p>準備ができましたら、<strong>スペースキー</strong>を押して音声確認を開始してください。</p></div>`,
     choices: [' '],
     post_trial_gap: 500
 };
+// ▲▲▲ 変更ここまで ▲▲▲
 
 const practice_instructions_start = {
   type: jsPsychHtmlKeyboardResponse,
