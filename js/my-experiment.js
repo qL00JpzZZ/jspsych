@@ -136,7 +136,7 @@ const initials_trial = {
             <p>実験時間は個人差がありますが20分程度です。</p>
             <p>実験参加に同意していただける場合はあらかじめ配布されたIDを入力してください。</p>
             <hr>
-            <p style="color: red; font-weight: bold;">【重要】<br>実験中（特に課題フェーズ）で画像がうまく表示されない（枠だけ表示されるなど）場合は、お手数ですがページを再読み込み（リロード）し、IDの入力からやり直してください。</p>
+            <p style="color: red; font-weight: bold;"><br>実験中（特に課題フェーズ）で画像がうまく表示されない（枠だけ表示されるなど）場合は、お手数ですがページを再読み込み（リロード）し、IDの入力からやり直してください。</p>
             <hr>
         </div>
         <p>あなたのIDを半角英数字で入力してください（例: ST）：</p>
@@ -174,7 +174,7 @@ const sound_check_loop_node = {
 
 const task_explanation_trial = {
     type: jsPsychHtmlKeyboardResponse,
-    stimulus: `<div style="max-width: 800px; text-align: center; line-height: 1.6;"><p>これから、画面に風景画像が表示され、同時に短い音声が再生されます。</p><p>あなたの課題は、表示された画像が「屋内」のものか「屋外」のものかを判断し、</br>できるだけ速く、正確にキーボードのキーを押して回答することです。</p><br><div style="width: 200px; height: 200px; border: 1px solid black; display: flex; align-items: center; justify-content: center; margin: 20px auto; background-color: #eee;"><span style="font-size: 1.2em; color: #555;">風景画</span></div><br><p style="font-size: 1.2em;"><b>J</b> = 屋内画像の場合</p><p style="font-size: 1.2em;"><b>K</b> = 屋外画像の場合</p><br><p>準備ができたら、スペースキーを押して練習を開始してください。</p></div>`,
+    stimulus: `<div style="max-width: 800px; text-align: center; line-height: 1.6;"><p>これから、画面に風景画像が表示され、同時に短い音声が再生されます。</p><p>あなたの課題は、表示された画像が<strong style="color: red;">「屋内」</strong>のものか<strong style="color: red;">「屋外」</strong>のものかを判断し、</br>できるだけ速く、正確にキーを押して回答することです。</p><br><div style="width: 200px; height: 200px; border: 1px solid black; display: flex; align-items: center; justify-content: center; margin: 20px auto; background-color: #eee;"><span style="font-size: 1.2em; color: #555;">風景画</span></div><br><p style="font-size: 1.2em;"><b>J</b> = 屋内画像の場合</p><p style="font-size: 1.2em;"><b>K</b> = 屋外画像の場合</p><br><p>準備ができたら、スペースキーを押して練習を開始してください。</p></div>`,
     choices: [' '],
     post_trial_gap: 500
 };
@@ -183,11 +183,11 @@ const task_explanation_trial = {
 const instructions_start = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: `<div style="max-width: 800px; text-align: left; line-height: 1.6;">
-<p><strong>【課題の内容】</strong></p><p>画面に風景画像（屋内または屋外）が1枚ずつ表示され、それと同時に短い音声が再生されます。あなたの課題は、表示された画像が「屋内」のものか「屋外」のものかを判断し、できるだけ速く、正確にキーボードのキーを押して回答することです。</p>
+<p><strong>【課題の内容】</strong></p><p>画面に風景画像（屋内または屋外）が1枚ずつ表示され、それと同時に短い音声が再生されます。あなたの課題は、表示された画像が<strong style="color: red;">「屋内」</strong>のものか<strong style="color: red;">「屋外」</strong>のものかを判断し、できるだけ速く、正確にキーを押して回答することです。</p>
 <p><strong>・屋内の場合：「J」キー</strong><br><strong>・屋外の場合：「K」キー</strong></p>
 <p>この課題では、合計120枚の画像と音声が同時に提示されます。画像の「屋内」「屋外」の判断に集中してください。</p>
-<p><strong>【所要時間と注意点】</strong></p>
-<p>実験全体の所要時間は約15〜20分です。実験中は、静かで集中できる環境でご参加ください。<strong style="color: red;">また、PCのスピーカーまたはイヤホンから音声が聞こえる状態にしてください。</strong></p>
+<p><strong>【注意点】</strong></p>
+<p>静かで集中できる環境でご参加ください。<strong style="color: red;">PCのスピーカーまたはイヤホンから音声が聞こえる状態にしてください。</strong></p>
 <p>準備ができましたら、<strong>スペースキー</strong>を押して音声確認を開始してください。</p></div>`,
     choices: [' '],
     post_trial_gap: 500
