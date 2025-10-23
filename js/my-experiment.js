@@ -184,7 +184,7 @@ const instructions_start = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: `<div style="max-width: 800px; text-align: left; line-height: 1.6;">
 <p><strong>【課題の内容】</strong></p><p>画面に風景画像（屋内または屋外）が1枚ずつ表示され、それと同時に短い音声が再生されます。あなたの課題は、表示された画像が「屋内」のものか「屋外」のものかを判断し、できるだけ速く、正確にキーボードのキーを押して回答することです。</p>
-<p><strong>・屋内の場合：「J」キー</strong><br><strong>・屋外画像の場合：「K」キー</strong></p>
+<p><strong>・屋内の場合：「J」キー</strong><br><strong>・屋外の場合：「K」キー</strong></p>
 <p>この課題では、合計120枚の画像と音声が同時に提示されます。画像の「屋内」「屋外」の判断に集中してください。</p>
 <p><strong>【所要時間と注意点】</strong></p>
 <p>実験全体の所要時間は約15〜20分です。実験中は、静かで集中できる環境でご参加ください。<strong style="color: red;">また、PCのスピーカーまたはイヤホンから音声が聞こえる状態にしてください。</strong></p>
